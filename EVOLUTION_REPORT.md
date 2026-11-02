@@ -1,6 +1,6 @@
 # JARVES EVOLUTION MAX — Relatório técnico v2.5.2
 
-## Atualização v2.5.2 (preparação local)
+## Atualização v2.5.2 (publicada)
 
 - Implementado catálogo com 900 comandos distintos: 30 áreas por 30 ações.
 - Incluída busca acessível sem distinção de acentos, limitada a 12 itens renderizados para manter a UI fluida.
@@ -20,10 +20,12 @@
 | Build AppImage x64 | Gerado: `dist/JARVES-AI-2.5.2-x86_64.AppImage` |
 | Build Windows EXE x64 | Gerado: `dist/JARVES-AI-Setup-2.5.2-x64.exe` |
 | Smoke visual e busca de comandos no navegador | Aprovado em servidor local v2.5.2 |
-| Build APK Android | Pendente; este ambiente não tem Gradle nem Android SDK; workflow do GitHub pode compilá-lo após o push/tag |
-| Publicação GitHub e deploy BAXAI | Branch `jarves-v2.5.2` criada; envio final, PR, merge, Release e deploy pendentes |
+| Build APK Android | Aprovado no GitHub Actions; `app-debug.apk` publicado na Release v2.5.2 (50.4 MB) |
+| Release Windows x64 | `JARVES-AI-Setup-2.5.2-x64.exe` publicado (120 MB) |
+| Release Linux x64 | `JARVES-AI-2.5.2-x86_64.AppImage` publicado (124 MB) |
+| GitHub e site BAXAI | PR #1 integrada; Release v2.5.2 e deploy GitHub Pages concluídos e verificados |
 
-O artefato e o código v2.4.3 descritos abaixo são apenas a preparação anterior e não equivalem a uma publicação da v2.5.2.
+O artefato e o código v2.4.3 descritos abaixo são a preparação anterior; a publicação atual é a v2.5.2.
 
 ## Atualização de memória v2.4.3 (preparação local)
 
