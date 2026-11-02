@@ -1,11 +1,17 @@
 import { getDb } from '../../backend/services/db.mjs';
 import { newId, nowIso } from '../../backend/services/id.mjs';
 import { env } from '../../backend/config/env.mjs';
+import { getSetting } from './settingsRepository.mjs';
+
+export function isMemoryEnabled() {
+  const configured = getSetting('memory_enabled', env.MEMORY_ENABLED);
+  return configured === true || ['true', '1', 'yes'].includes(String(configured).toLowerCase());
+}
 
 export function createMemory({ kind, subject = null, content, tags = null, enabled = true }) {
   kind = kind || 'note';
   if (typeof content !== 'string' || !content.trim()) throw new Error('Conteudo da memoria vazio');
-  if (!env.MEMORY_ENABLED) throw new Error('Memoria desativada');
+  if (!isMemoryEnabled()) throw new Error('Memoria desativada nas configuracoes');
   const db = getDb();
   const count = db.prepare('SELECT COUNT(*) AS c FROM memories').get().c;
   if (count >= env.MEMORY_MAX_ITEMS) throw new Error('Limite de memoria atingido');
@@ -57,13 +63,33 @@ export function searchMemories(q, limit = 50) {
   if (!q || !q.trim()) return [];
   // FTS
   try {
-    const rows = db.prepare(`SELECT m.* FROM memories m JOIN memories_fts f ON f.rowid=m.rowid WHERE memories_fts MATCH ? ORDER BY rank LIMIT ?`).all(q, limit);
+    const rows = db.prepare(`SELECT m.* FROM memories m JOIN memories_fts f ON f.rowid=m.rowid WHERE memories_fts MATCH ? AND m.enabled=1 ORDER BY rank LIMIT ?`).all(q, limit);
     if (rows.length) return rows.map(normalize);
     throw new Error('sem resultado FTS'); // cai no LIKE (cobre prefixos/acentos que o FTS nao acha)
   } catch {
     const like = '%' + String(q).replace(/[\\%_]/g, '\\$&') + '%';
-    return db.prepare("SELECT * FROM memories WHERE content LIKE ? ESCAPE '\\' OR subject LIKE ? ESCAPE '\\' OR tags LIKE ? ESCAPE '\\' ORDER BY updated_at DESC LIMIT ?").all(like, like, like, limit).map(normalize);
+    return db.prepare("SELECT * FROM memories WHERE enabled=1 AND (content LIKE ? ESCAPE '\\' OR subject LIKE ? ESCAPE '\\' OR tags LIKE ? ESCAPE '\\') ORDER BY updated_at DESC LIMIT ?").all(like, like, like, limit).map(normalize);
   }
+}
+
+export function findRelevantMemories(query, limit = 3) {
+  if (!isMemoryEnabled() || typeof query !== 'string' || !query.trim()) return [];
+  const stopWords = new Set(['com','como','das','dos','ela','ele','eles','essa','esse','esta','este','isso','mais','meu','minha','para','pela','pelo','por','que','qual','quais','quando','quem','seu','sua','the','and','for','with','what','when','where','your']);
+  const terms = [...new Set(query.toLocaleLowerCase().match(/[\p{L}\p{N}]{3,}/gu) || [])]
+    .filter(term => !stopWords.has(term))
+    .slice(0, 12);
+  const matches = new Map();
+  for (const term of terms) {
+    for (const memory of searchMemories(term, limit)) {
+      const current = matches.get(memory.id);
+      if (current) current.score += 1;
+      else matches.set(memory.id, { memory, score: 1 });
+    }
+  }
+  return [...matches.values()]
+    .sort((a, b) => b.score - a.score || b.memory.updated_at.localeCompare(a.memory.updated_at))
+    .slice(0, limit)
+    .map(({ memory }) => memory);
 }
 
 export function clearMemories() {

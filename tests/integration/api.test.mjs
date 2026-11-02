@@ -125,6 +125,95 @@ test('memory CRUD', async () => {
   assert.equal(del.status, 200);
 });
 
+test('memory setting disables creation but keeps saved memories manageable', async () => {
+  const created = await fetch(baseUrl + '/api/memory', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: 'memória preservada', kind: 'note' }),
+  });
+  assert.equal(created.status, 201);
+  const saved = await created.json();
+
+  const disabled = await fetch(baseUrl + '/api/settings/memory_enabled', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: false }),
+  });
+  assert.equal(disabled.status, 200);
+  assert.deepEqual(await (await fetch(baseUrl + '/api/memory/status')).json(), { enabled: false });
+
+  const rejected = await fetch(baseUrl + '/api/memory', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: 'não deve ser salvo', kind: 'note' }),
+  });
+  assert.equal(rejected.status, 400);
+  assert.match((await rejected.json()).error, /Memoria desativada/);
+  assert.ok((await (await fetch(baseUrl + '/api/memory')).json()).some(memory => memory.id === saved.id));
+
+  const enabled = await fetch(baseUrl + '/api/settings/memory_enabled', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: true }),
+  });
+  assert.equal(enabled.status, 200);
+  assert.deepEqual(await (await fetch(baseUrl + '/api/memory/status')).json(), { enabled: true });
+
+  const invalid = await fetch(baseUrl + '/api/settings/memory_enabled', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: 'sometimes' }),
+  });
+  assert.equal(invalid.status, 400);
+});
+
+test('local chat includes relevant enabled memories but remote chat does not', async () => {
+  const cleared = await fetch(baseUrl + '/api/memory/clear', { method: 'POST' });
+  assert.equal(cleared.status, 200);
+  const savedMemory = await fetch(baseUrl + '/api/memory', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject: 'Preferência', content: 'Prefere respostas concisas em português.' }),
+  });
+  assert.equal(savedMemory.status, 201);
+
+  for (const [key, value] of [
+    ['openai_base_url', 'https://remote.example/v1'],
+    ['openai_api_key', 'test-key'],
+    ['openai_model', 'remote-model'],
+  ]) {
+    const response = await fetch(baseUrl + '/api/settings/' + key, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value }),
+    });
+    assert.equal(response.status, 200);
+  }
+
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  globalThis.fetch = async (url, options) => {
+    if (String(url).startsWith(baseUrl)) return originalFetch(url, options);
+    requests.push({ url: String(url), body: JSON.parse(options.body) });
+    if (String(url).endsWith('/chat/completions')) {
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' } }] }), {
+        status: 200, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return new Response(JSON.stringify({ message: { content: 'ok' }, model: 'qwen2.5:3b', done: true }), {
+      status: 200, headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  try {
+    const local = await fetch(baseUrl + '/api/chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Qual preferência de respostas em português?', provider: 'ollama', model: 'qwen2.5:3b', stream: false }),
+    });
+    assert.equal(local.status, 200);
+    assert.match(requests[0].body.messages[0].content, /Prefere respostas concisas em português/);
+
+    const remote = await fetch(baseUrl + '/api/chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Qual preferência de respostas em português?', provider: 'openai-compatible', model: 'remote-model', stream: false }),
+    });
+    assert.equal(remote.status, 200);
+    assert.doesNotMatch(requests[1].body.messages[0].content, /Prefere respostas concisas em português/);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
 test('task creation and run (mock)', async () => {
   const r = await fetch(baseUrl + '/api/tasks', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': process.env.ADMIN_TOKEN || '' },

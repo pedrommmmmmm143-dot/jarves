@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.5.2
+- Adicionado catálogo pesquisável com exatamente 900 comandos organizados em 30 áreas e 30 ações.
+- Os comandos preenchem o chat como sugestões revisáveis; o envio continua dependendo da ação explícita da pessoa.
+- A busca aceita texto sem acentos e limita a lista exibida para manter a interface leve em desktop e celular.
+- Movidas as ferramentas do painel do Chat para o menu lateral esquerdo e removido o botão superior "Atalhos".
+- Incluídos testes para quantidade, unicidade, pesquisa, resolução de comandos e versão.
+
+## 2.4.3
+- A preferência de memória agora controla criação e recuperação de memórias salvas, mantendo os registros disponíveis para consulta e exclusão quando desativada.
+- O chat recupera até três memórias relevantes apenas para provedores locais; memórias pessoais não são anexadas a chamadas OpenAI-compatíveis.
+- Adicionado controle acessível para ativar ou desativar memória nas configurações e testes de integração para persistência e privacidade.
+- Atualizados os metadados para os builds Android, Windows e Linux.
+
 ## 2.4.2
 - Geração de projetos de código estruturados, com validação de manifesto, nomes, extensões, conteúdo e limites antes da exportação.
 - Análise estática de sintaxe JavaScript e JSON sem executar o código enviado; linguagens sem verificador compatível são identificadas claramente.

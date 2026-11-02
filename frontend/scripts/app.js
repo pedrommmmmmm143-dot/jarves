@@ -100,10 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnClear').hidden = v !== 'chat';
     document.getElementById('btnExport').hidden = v !== 'chat';
     document.getElementById('btnTheme').hidden = v !== 'chat';
-    document.getElementById('btnChatTools').hidden = v !== 'chat';
     document.getElementById('btnBackToChat').hidden = v === 'chat';
-    document.getElementById('chatTools').hidden = true;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', 'false');
     const viewTitles = {
       settings: 'Configurações',
       'voice-studio': 'Voz e vídeo',
@@ -127,9 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (active) btn.setAttribute('aria-current', 'page');
       else btn.removeAttribute('aria-current');
     });
+    document.querySelectorAll('.nav-btn[data-sidebar-tool]').forEach(btn => {
+      const active = btn.dataset.sidebarTool === v;
+      btn.classList.toggle('active', active);
+      if (active) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    });
     if (v === 'agents') loadAgents();
     if (v === 'files') loadFiles();
-    if (v === 'memory') loadMemory();
+    if (v === 'memory') { loadMemory(); loadMemoryStatus(); }
     if (v === 'tasks') loadTasks();
     if (v === 'settings') { loadSettings(); loadReports(); }
     if (v === 'settings') loadAndroidServerSettings();
@@ -143,25 +146,55 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => { setView(btn.dataset.view); closeSidebar(); });
   });
   document.querySelector('.nav-btn[href="/download.html"]')?.addEventListener('click', () => closeSidebar());
-  document.getElementById('btnChatTools').addEventListener('click', () => {
-    const panel = document.getElementById('chatTools');
-    panel.hidden = !panel.hidden;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', String(!panel.hidden));
-  });
-  document.getElementById('btnCloseChatTools').addEventListener('click', () => {
-    document.getElementById('chatTools').hidden = true;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', 'false');
-  });
   document.getElementById('btnBackToChat').addEventListener('click', () => setView('chat'));
-  document.getElementById('chatTools').addEventListener('click', event => {
-    if (event.target.closest('[data-chat-action="images"]')) {
-      document.getElementById('chatImageTool').hidden = !document.getElementById('chatImageTool').hidden;
+  const commandSearch = document.getElementById('commandCatalogSearch');
+  const commandResults = document.getElementById('commandCatalogResults');
+  const commandCount = document.getElementById('commandCatalogCount');
+  function renderCommandCatalog(query = '') {
+    if (!window.jarvesCommandCatalog || !commandResults || !commandCount) return;
+    const matches = window.jarvesCommandCatalog.search(query, 12);
+    commandResults.replaceChildren();
+    for (const entry of matches) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'command-catalog-item';
+      button.dataset.command = entry.command;
+      button.setAttribute('role', 'listitem');
+      const title = document.createElement('strong');
+      title.textContent = entry.name;
+      const command = document.createElement('code');
+      command.textContent = entry.command;
+      button.append(title, command);
+      commandResults.appendChild(button);
+    }
+    const total = window.jarvesCommandCatalog.countMatches(query);
+    commandCount.textContent = `${matches.length} de ${total} comandos`;
+  }
+  if (commandSearch) {
+    renderCommandCatalog();
+    commandSearch.addEventListener('input', () => renderCommandCatalog(commandSearch.value));
+    commandResults.addEventListener('click', event => {
+      const button = event.target.closest('[data-command]');
+      if (!button) return;
+      setView('chat');
+      document.getElementById('input').value = button.dataset.command;
+      document.getElementById('input').focus();
+      closeSidebar();
+      toast('Comando inserido no chat. Revise e envie quando quiser.');
+    });
+  }
+  document.getElementById('sidebarToolNav').addEventListener('click', event => {
+    if (event.target.closest('[data-sidebar-action="images"]')) {
+      setView('chat');
+      const imageTool = document.getElementById('chatImageTool');
+      imageTool.hidden = !imageTool.hidden;
       document.getElementById('chatImageStatus').textContent = '';
+      closeSidebar();
       return;
     }
-    const button = event.target.closest('[data-chat-tool]');
+    const button = event.target.closest('[data-sidebar-tool]');
     if (!button) return;
-    setView(button.dataset.chatTool);
+    setView(button.dataset.sidebarTool);
     closeSidebar();
   });
   // default chat view
@@ -231,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.messages.length) {
       const welcome = document.createElement('div');
       welcome.className = 'welcome';
-      welcome.innerHTML = '<div class="welcome-orb" aria-hidden="true">J</div><p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.4.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div>';
+      welcome.innerHTML = '<div class="welcome-orb" aria-hidden="true">J</div><p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div>';
       area.appendChild(welcome);
       applyPreferences();
       welcome.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
@@ -296,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Send message
   function showChatCommandHelp() {
-    toast('/ajuda · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
+    toast('/ajuda · 900 comandos: abra Ferramentas e atalhos no menu lateral · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
   }
   function handleChatCommand(text) {
     if (!text.startsWith('/')) return false;
@@ -385,10 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   async function sendMessage() {
     const input = document.getElementById('input');
-    const text = input.value.trim();
+    let text = input.value.trim();
     if (!text) return;
     if (state.generating) return;
-    if (handleChatCommand(text)) {
+    const catalogCommand = window.jarvesCommandCatalog?.get(text);
+    if (catalogCommand) text = catalogCommand.prompt;
+    else if (handleChatCommand(text)) {
       input.value = '';
       saveDraft('');
       return;
@@ -1348,6 +1383,34 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Memory
+  const memoryEnabledToggle = document.getElementById('memoryEnabled');
+  const memoryStatus = document.getElementById('memoryStatus');
+  const memoryInputs = ['memSubject', 'memContent', 'memKind', 'btnSaveMem'].map(id => document.getElementById(id));
+  function applyMemoryEnabled(enabled) {
+    memoryEnabledToggle.checked = enabled;
+    for (const input of memoryInputs) input.disabled = !enabled;
+    memoryStatus.textContent = enabled
+      ? 'Memórias relevantes podem entrar no contexto apenas com provedores locais (Ollama/Automático). Elas nunca são enviadas a provedores remotos.'
+      : 'Uso de memórias desativado. As já salvas continuam disponíveis para consulta e exclusão.';
+  }
+  async function loadMemoryStatus() {
+    try {
+      const { enabled } = await api.memoryStatus();
+      applyMemoryEnabled(enabled);
+    } catch (e) { memoryStatus.textContent = `Não foi possível carregar a configuração: ${e.message}`; }
+  }
+  memoryEnabledToggle.addEventListener('change', async () => {
+    const enabled = memoryEnabledToggle.checked;
+    memoryEnabledToggle.disabled = true;
+    try {
+      await api.setSetting('memory_enabled', enabled);
+      applyMemoryEnabled(enabled);
+      toast(enabled ? 'Salvamento de memórias ativado.' : 'Salvamento de memórias desativado.');
+    } catch (e) {
+      memoryEnabledToggle.checked = !enabled;
+      toast(e.message, 'error');
+    } finally { memoryEnabledToggle.disabled = false; }
+  });
   async function loadMemory(q = '') {
     try {
       let list;

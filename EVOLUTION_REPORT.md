@@ -1,10 +1,62 @@
-# JARVES EVOLUTION MAX — Relatório de implementação
+# JARVES EVOLUTION MAX — Relatório técnico v2.5.2
+
+## Atualização v2.5.2 (preparação local)
+
+- Implementado catálogo com 900 comandos distintos: 30 áreas por 30 ações.
+- Incluída busca acessível sem distinção de acentos, limitada a 12 itens renderizados para manter a UI fluida.
+- Selecionar um comando só preenche a caixa de mensagem; é necessário revisar e enviar explicitamente.
+- Todas as ferramentas agora ficam no menu lateral esquerdo; o botão superior "Atalhos" foi removido.
+- Os prompts instruem a IA a reconhecer dados ausentes e não alegar execução, testes ou publicação que não ocorreram.
+- Atualizados versão do app, backend, frontend, cache PWA e versionCode do Android para 252.
+
+### Validação v2.5.2
+
+| Verificação | Resultado |
+|---|---|
+| Testes do catálogo e smoke da interface | Aprovado |
+| Suíte completa (`npm test`) | Aprovado: 121/121 |
+| Verificação JavaScript (`npm run check`) | Aprovado: 58/58 arquivos |
+| Auditoria de dependências de produção (`npm audit --omit=dev`) | 0 vulnerabilidades |
+| Build AppImage x64 | Gerado: `dist/JARVES-AI-2.5.2-x86_64.AppImage` |
+| Build Windows EXE x64 | Gerado: `dist/JARVES-AI-Setup-2.5.2-x64.exe` |
+| Smoke visual e busca de comandos no navegador | Aprovado em servidor local v2.5.2 |
+| Build APK Android | Pendente; este ambiente não tem Gradle nem Android SDK; workflow do GitHub pode compilá-lo após o push/tag |
+| Publicação GitHub e deploy BAXAI | Branch `jarves-v2.5.2` criada; envio final, PR, merge, Release e deploy pendentes |
+
+O artefato e o código v2.4.3 descritos abaixo são apenas a preparação anterior e não equivalem a uma publicação da v2.5.2.
+
+## Atualização de memória v2.4.3 (preparação local)
+
+Esta atualização corrige a preferência de memória que antes era aceita pela API, mas não controlava integralmente a criação e o uso de memórias.
+
+- A opção de memória agora é exposta nas configurações e reflete o estado persistido.
+- Desativar a memória impede novas gravações e a recuperação para o chat, sem apagar os dados já salvos; os registros continuam disponíveis para consulta e exclusão.
+- O chat recupera no máximo três memórias relevantes para provedores locais. Provedores OpenAI-compatíveis não recebem essas memórias.
+- Memórias desativadas individualmente são excluídas da busca contextual.
+- A versão foi atualizada para 2.4.3, incluindo o cache PWA, interface, backend, metadados Android e artefatos desktop.
+
+### Validação v2.4.3
+
+| Verificação | Resultado |
+|---|---|
+| Testes completos (`npm test`) | Aprovado: 119/119 |
+| Verificação JavaScript (`npm run check`) | Aprovado: 57/57 arquivos |
+| Auditoria de dependências de produção (`npm audit --omit=dev`) | 0 vulnerabilidades |
+| Build AppImage x64 | Gerado e verificado em `dist/JARVES-AI-2.4.3-x86_64.AppImage` |
+| Build Windows EXE x64 | Gerado em `dist/JARVES-AI-Setup-2.4.3-x64.exe` |
+| Build APK Android | Não executado: não há Gradle wrapper nem Gradle instalado neste ambiente |
+| Teste com Ollama real | Não executado: serviço local não foi confirmado |
+| Publicação GitHub / deploy BAXAI | Pendente: as ferramentas desta sessão não fornecem escrita no GitHub |
+
+A preparação v2.4.3 foi incorporada à atualização v2.5.2 e não teve Release individual. O estado atual de publicação está descrito na seção v2.5.2 acima.
+
+## Base publicada v2.4.2
 
 **Pacote base:** JARVES AI 2.4.2  
 **Estado:** publicada como Release v2.4.2; builds e GitHub Pages concluídos  
 **Data:** 02/11/2026
 
-## Implementado nesta preparação
+## Implementado na preparação da v2.4.2
 
 ### Brain / perfis de IA
 - Criado `ai/core/profiles.mjs` com perfis Geral, Programador, Pesquisador, Professor, Planejador, Analista e Criador.
