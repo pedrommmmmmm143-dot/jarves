@@ -1,7 +1,7 @@
 # JARVES EVOLUTION MAX — Relatório de implementação
 
 **Pacote base:** JARVES AI 2.4.2  
-**Estado:** preparação local; não publicada no GitHub  
+**Estado:** publicada como Release v2.4.2; builds e GitHub Pages concluídos  
 **Data:** 02/11/2026
 
 ## Implementado nesta preparação
@@ -45,14 +45,14 @@
 |---|---|
 | `npm run check` | Aprovado: 57/57 arquivos JavaScript |
 | Testes unitários de perfis | Aprovado: 3/3 |
-| Testes estáticos/e2e/perfis selecionados | 11 passaram; 1 falhou por falta de `express` |
-| Suíte completa `npm test` | Não validada: dependências ausentes |
-| `npm ci` | Excedeu o tempo limite do ambiente |
-| Build APK / EXE / AppImage | Não executado |
+| Suíte de testes (`npm test`) | Aprovada: 117/117 testes |
+| `npm run check` | Aprovado: 57/57 arquivos JavaScript |
+| `npm ci` | Concluído; CI e builds passaram |
+| Build APK / EXE / AppImage | Aprovados e publicados na Release v2.4.2 |
 | Teste real com Ollama local | Não executado; serviço local não foi confirmado |
-| Deploy BAXAI / GitHub Pages | Não executado |
+| Deploy BAXAI / GitHub Pages | Aprovado: https://pedrommmmmmm143-dot.github.io/jarves/ |
 
-A execução ampla de testes registrou falhas de carregamento porque `node_modules` não continha `express` e `dotenv`. A tentativa de `npm ci --ignore-scripts --no-audit --no-fund` excedeu o limite de tempo. Portanto, não é correto declarar a suíte completa aprovada ou reprovada por defeitos de lógica até instalar as dependências e repetir os testes.
+No snapshot da release, `npm ci`, `npm run check` e `npm test` foram concluídos com sucesso (117/117 testes). `npm ci` reportou 15 vulnerabilidades moderadas nas dependências; elas não foram alteradas nesta publicação.
 
 ## Limitações e itens pendentes
 
@@ -60,12 +60,12 @@ A execução ampla de testes registrou falhas de carregamento porque `node_modul
 2. A voz existente depende das APIs/vozes disponíveis no navegador ou no Android; reconhecimento offline não é garantido.
 3. O sistema Coder existente gera e analisa código, mas não oferece execução irrestrita e automática de projetos. Compiladores/SDKs precisam estar instalados.
 4. O modo Ollama requer instalação do próprio Ollama e do modelo escolhido. O JARVES não baixa o modelo automaticamente.
-5. Não foram criados instaladores nesta preparação.
-6. Não foi publicada uma nova Release nem atualizado o site BAXAI.
+5. Os instaladores foram gerados pelos workflows do GitHub Actions e publicados na Release v2.4.2.
+6. A Release v2.4.2 e a página GitHub Pages foram publicadas.
 
 ## Publicação
 
-A consulta de permissões do repositório `p59784166-cloud/jarves` retornou `pull: true` e `push: false` nesta conexão. É necessário conceder permissão `Contents: Read and write` para enviar uma branch/commit ou abrir um Pull Request. A publicação do site exige que o workflow GitHub Pages seja executado com sucesso.
+O código está publicado em [pedrommmmmmm143-dot/jarves](https://github.com/pedrommmmmmm143-dot/jarves). A Release [v2.4.2](https://github.com/pedrommmmmmm143-dot/jarves/releases/tag/v2.4.2) contém `app-debug.apk`, `JARVES-AI-Setup-2.4.2-x64.exe` e `JARVES-AI-2.4.2-x86_64.AppImage`. Os downloads estão disponíveis em [GitHub Pages](https://pedrommmmmmm143-dot.github.io/jarves/). O APK é de depuração e o EXE não possui assinatura digital.
 
 ## Próxima validação recomendada
 
@@ -87,4 +87,4 @@ ollama pull qwen2.5:3b
 
 O download do modelo deve ser iniciado manualmente pelo usuário. Verifique `http://127.0.0.1:3000/api/models/health` e faça testes de chat/streaming antes de criar uma tag de Release.
 
-**Conclusão:** foram implementadas melhorias reais de perfis de IA, validação de contexto e diagnóstico Ollama. A preparação é parcial e ainda precisa da suíte completa, dos builds e da publicação no GitHub/BAXAI.
+**Conclusão:** as melhorias de perfis de IA, validação de contexto e diagnóstico Ollama foram publicadas e verificadas. A release oferece os três instaladores; as limitações funcionais listadas acima permanecem.
