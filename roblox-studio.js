@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.location.protocol === 'file:') {
     const pluginDownload = document.querySelector('#view-roblox-studio a[download]');
     if (pluginDownload) {
-      pluginDownload.href = 'https://raw.githubusercontent.com/p59784166-cloud/jarves/main/frontend/roblox-plugin/JARVESStudioPlugin.lua';
+      pluginDownload.href = 'https://raw.githubusercontent.com/pedrommmmmmm143-dot/jarves/main/frontend/roblox-plugin/JARVESStudioPlugin.lua';
     }
     pairButton.disabled = true;
     queueButton.disabled = true;
