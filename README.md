@@ -1,4 +1,4 @@
-# JARVES AI 2.5.2 — IA local Android + Roblox Studio
+# JARVES AI 2.5.8 — IA local Android + Roblox Studio
 
 Repositorio-fonte preparado a partir do pacote Windows enviado.
 
@@ -10,7 +10,9 @@ Repositorio-fonte preparado a partir do pacote Windows enviado.
 - GitHub Actions compilam APK, EXE e AppImage como artefatos. Ao enviar uma tag `v*`, os três arquivos são anexados à Release correspondente no GitHub.
 - **Arquivos e código** importa arquivos locais e baixa arquivos de links HTTP/HTTPS públicos; os bytes são preservados e os downloads respeitam o limite configurado para uploads.
 - A integração Roblox Studio usa um plugin local e uma fila autenticada em loopback. Cada script exige aprovação dentro do Studio antes de ser inserido; o JARVES não executa código Luau.
-- Ferramentas e comandos ficam organizados no menu lateral esquerdo. A geração de PNG usa um modelo Automatic1111/Forge local configurado pelo usuário; um som curto opcional avisa quando a resposta termina.
+- Ferramentas e os 900 comandos ficam em **Atalhos** no campo da conversa, não no menu lateral. Pedidos explícitos de imagem no chat usam Automatic1111/Forge local quando configurado; o modelo e o hardware são necessários e não há promessa de geração irrestrita. Um som curto opcional avisa quando a resposta termina.
+- Sites, jogos e experiências HTML gerados com Ollama passam por validação de estrutura e sintaxe dos scripts; a pré-visualização permanece isolada e bloqueia conexões de rede.
+- Geração de vídeo generativo por comando conectada ao ComfyUI local, usando um workflow API configurado pela pessoa; nenhum modelo ou nó é baixado automaticamente.
 - Roblox Studio é oficialmente disponível para Windows e macOS. No Linux, executar via Wine é uma alternativa não oficial, sem garantia de compatibilidade.
 
 ## Executar o servidor
@@ -44,12 +46,24 @@ O modo **Servidor** continua opcional e conecta a interface web do JARVES/Ollama
 
 A descoberta usa mDNS (`_jarves._tcp`) e só é anunciada quando o backend escuta em todas as interfaces ou num endereço local privado. O APK não liga o Wi-Fi nem ingressa numa rede protegida; ambos os aparelhos precisam estar na mesma rede local e a rede deve permitir tráfego entre dispositivos. A versão desktop instalada mantém o backend limitado a `127.0.0.1`; para conectar o APK, inicie o servidor Node em modo LAN conforme o passo 1.
 
-## JARVIS Evolution / Brain / Coder — melhorias desta preparação
-- O menu lateral esquerdo reúne as ferramentas e oferece exatamente 900 comandos pesquisáveis em 30 áreas e 30 ações. Escolher um comando preenche a mensagem para revisão; o JARVES só envia após confirmação da pessoa.
+## Gerar vídeo com modelo local
+
+O JARVES encaminha pedidos explícitos como **“Gere um vídeo de uma cidade futurista à noite”** ao ComfyUI configurado. A integração não é um modelo de vídeo próprio: ela requer ComfyUI, workflow API compatível e modelos/nós instalados pela pessoa.
+
+1. Instale e inicie o ComfyUI na máquina que executa o servidor JARVES (padrão `http://127.0.0.1:8188`).
+2. No ComfyUI, prepare um workflow de geração de vídeo que aceite texto e produza MP4 ou WebM; exporte o JSON no formato API.
+3. Abra **Atalhos → Voz e vídeo**, informe o endpoint, importe o JSON e configure o ID do nó e o campo de texto que recebem o prompt. Salve e teste a conexão.
+4. No Chat, envie um pedido claro de criação de vídeo. A prévia e o link de download aparecem no chat.
+
+A integração não baixa modelos, não usa APIs pagas e não transforma uma imagem em movimento por conta própria. O resultado depende do modelo, workflow, nós extras e hardware instalados. A fila aguarda até 30 minutos; a saída deve ser MP4/WebM válido de até 128 MiB. Baixe o vídeo para mantê-lo; os bytes não são guardados no histórico.
+
+## JARVIS Evolution / Brain / Coder — melhorias desta versão
+- **Atalhos** no compositor do chat reúne ferramentas e oferece exatamente 900 comandos pesquisáveis em 30 áreas e 30 ações. Escolher um comando preenche a mensagem para revisão; o JARVES só envia após confirmação da pessoa.
 - A memória configurável pode ser desativada sem apagar registros existentes. Com ela ativada, até três memórias relevantes podem compor o contexto apenas em provedores locais; elas não são enviadas a provedores OpenAI-compatíveis.
 - O perfil da IA pode ser escolhido no próprio Chat: Geral, Programador, Pesquisador, Professor, Planejador, Analista ou Criador. A seleção fica salva localmente no navegador.
 - O backend valida o perfil e limita instruções personalizadas antes de montar o contexto do modelo. O endpoint `GET /api/profiles` lista os perfis suportados.
 - O endpoint `GET /api/models/health` verifica se o Ollama responde, lista modelos disponíveis e informa se o modelo selecionado está instalado. A verificação não baixa modelos.
+- Em **Configurações**, ajuste o contexto do Ollama para 4096, 8192, 16384 ou 32768 tokens. Mais contexto pode aumentar o uso de memória; o padrão permanece 16384 e a escolha não altera o provedor remoto.
 - O padrão de configuração do Ollama foi alinhado para `qwen2.5:3b` em instalações novas. Um modelo já salvo nas Configurações continua respeitado.
 - O fluxo de programação existente continua baseado em geração/analise e revisão: o JARVES não executa código gerado automaticamente nem altera arquivos do projeto sem aprovação.
 
@@ -57,6 +71,7 @@ Exemplo de diagnóstico local: `GET http://127.0.0.1:3000/api/models/health`.
 
 ## IA sem cobrança por uso
 - Escolha **Ollama local** (ou **Automático**) em Configurações e instale um modelo compatível. A inferência fica no seu PC/servidor e não exige uma chave de API paga.
+- Ajuste o contexto em Configurações > Contexto Ollama: 4096, 8192, 16384 ou 32768 tokens. Valores maiores podem exigir mais memória e dependem dos limites do modelo; 16384 é o padrão. O Executor HTML também aplica essa opção ao Ollama.
 - O download inicial precisa de internet e ocupa espaço em disco; a execução usa memória, processador/placa de vídeo e energia do seu equipamento. A licença de cada modelo pode variar.
 - Se Ollama não estiver disponível, Automático usa `jarves-base`, uma resposta offline básica e limitada, não um modelo generativo completo.
 - Provedores remotos compatíveis podem cobrar e exigem acesso próprio. **GPT-6.1 Sol** tem o identificador `gpt-6.1-sol`, suporta Chat Completions, mas é um modelo de API pago; ele só pode ser selecionado se o endpoint remoto configurado o listar. A lista de modelos é obtida dinamicamente, sem fingir suporte ou adicioná-lo como opção grátis. Consulte [documentação e preços oficiais](https://developers.openai.com/api/docs/models/gpt-6.1-sol).
@@ -75,7 +90,7 @@ A página local de downloads está em `/download.html` quando o servidor JARVES 
 - O instalador ainda não tem assinatura de código; o Windows pode mostrar avisos do SmartScreen.
 
 ## Gerar AppImage para Linux
-- Requer Node.js 22.13+; execute `npm ci` e `npm run build:linux` para criar `dist/JARVES-AI-2.5.2-x86_64.AppImage`.
+- Requer Node.js 22.13+; execute `npm ci` e `npm run build:linux` para criar `dist/JARVES-AI-2.5.8-x86_64.AppImage`.
 - O workflow **Build JARVES Linux AppImage** gera o mesmo pacote x86_64, publica-o como artefato do Actions e o anexa à Release nas tags `v*`.
 - Os pacotes Electron incluem o diretório `executor/`, usado pelo provedor de IA, e usam ícones de aplicativo específicos para Linux e Windows. O APK inclui ícones de launcher em todas as densidades Android.
 

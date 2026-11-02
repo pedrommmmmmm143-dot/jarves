@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.5.8
+- Adicionada configuração validada de contexto do Ollama (4k, 8k, 16k ou 32k tokens), com indicação do impacto de memória e padrão preservado em 16k.
+- A configuração é aplicada ao parâmetro `num_ctx` em cada geração e também funciona no Executor HTML offline; não baixa modelos nem altera provedores remotos.
+- Alinhados o modelo de exemplo e o Executor ao padrão Ollama `qwen2.5:3b`, sem sobrescrever modelos que já estejam configurados.
+- Atualizados metadados para JARVES 2.5.8 e versionCode Android 258.
+
+## 2.5.6
+- Pedidos claros de geração de imagem em português e inglês no chat agora acionam o Automatic1111/Forge local e mostram erros de configuração sem simular uma imagem.
+- Pedidos claros de geração de vídeo no chat agora podem usar um workflow API instalado no ComfyUI local; endpoint privado, JSON, nó de prompt, saída MP4/WebM e tamanho são validados, sem download automático de modelos.
+- Ferramentas e catálogo de 900 comandos foram retirados da barra lateral e movidos para Atalhos no compositor do chat.
+- A geração de sites, jogos e experiências HTML valida estrutura, dependências e sintaxe JavaScript; tenta uma correção uma vez e informa falhas em vez de trocar silenciosamente para um resultado offline diferente.
+- Adicionado teste manual dos arquivos HTML gerados e testes automatizados para estrutura, scripts, dependências externas e identificação de pedidos de imagem.
+- Atualizados metadados para JARVES 2.5.6 e versionCode Android 256.
+
 ## 2.5.2
 - Adicionado catálogo pesquisável com exatamente 900 comandos organizados em 30 áreas e 30 ações.
 - Os comandos preenchem o chat como sugestões revisáveis; o envio continua dependendo da ação explícita da pessoa.
