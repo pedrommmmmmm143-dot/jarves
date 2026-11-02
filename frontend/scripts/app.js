@@ -100,10 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnClear').hidden = v !== 'chat';
     document.getElementById('btnExport').hidden = v !== 'chat';
     document.getElementById('btnTheme').hidden = v !== 'chat';
-    document.getElementById('btnChatTools').hidden = v !== 'chat';
     document.getElementById('btnBackToChat').hidden = v === 'chat';
-    document.getElementById('chatTools').hidden = true;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', 'false');
     const viewTitles = {
       settings: 'Configurações',
       'voice-studio': 'Voz e vídeo',
@@ -127,6 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (active) btn.setAttribute('aria-current', 'page');
       else btn.removeAttribute('aria-current');
     });
+    document.querySelectorAll('.nav-btn[data-sidebar-tool]').forEach(btn => {
+      const active = btn.dataset.sidebarTool === v;
+      btn.classList.toggle('active', active);
+      if (active) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    });
     if (v === 'agents') loadAgents();
     if (v === 'files') loadFiles();
     if (v === 'memory') { loadMemory(); loadMemoryStatus(); }
@@ -143,22 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => { setView(btn.dataset.view); closeSidebar(); });
   });
   document.querySelector('.nav-btn[href="/download.html"]')?.addEventListener('click', () => closeSidebar());
-  document.getElementById('btnChatTools').addEventListener('click', () => {
-    const panel = document.getElementById('chatTools');
-    panel.hidden = !panel.hidden;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', String(!panel.hidden));
-  });
-  document.getElementById('btnCloseChatTools').addEventListener('click', () => {
-    document.getElementById('chatTools').hidden = true;
-    document.getElementById('btnChatTools').setAttribute('aria-expanded', 'false');
-  });
   document.getElementById('btnBackToChat').addEventListener('click', () => setView('chat'));
   const commandSearch = document.getElementById('commandCatalogSearch');
   const commandResults = document.getElementById('commandCatalogResults');
   const commandCount = document.getElementById('commandCatalogCount');
   function renderCommandCatalog(query = '') {
     if (!window.jarvesCommandCatalog || !commandResults || !commandCount) return;
-    const matches = window.jarvesCommandCatalog.search(query, 30);
+    const matches = window.jarvesCommandCatalog.search(query, 12);
     commandResults.replaceChildren();
     for (const entry of matches) {
       const button = document.createElement('button');
@@ -174,9 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
       commandResults.appendChild(button);
     }
     const total = window.jarvesCommandCatalog.countMatches(query);
-    commandCount.textContent = total > matches.length
-      ? `${matches.length} de ${total} resultados`
-      : `${total} ${total === 1 ? 'resultado' : 'resultados'}`;
+    commandCount.textContent = `${matches.length} de ${total} comandos`;
   }
   if (commandSearch) {
     renderCommandCatalog();
@@ -184,20 +176,25 @@ document.addEventListener('DOMContentLoaded', () => {
     commandResults.addEventListener('click', event => {
       const button = event.target.closest('[data-command]');
       if (!button) return;
+      setView('chat');
       document.getElementById('input').value = button.dataset.command;
       document.getElementById('input').focus();
+      closeSidebar();
       toast('Comando inserido no chat. Revise e envie quando quiser.');
     });
   }
-  document.getElementById('chatTools').addEventListener('click', event => {
-    if (event.target.closest('[data-chat-action="images"]')) {
-      document.getElementById('chatImageTool').hidden = !document.getElementById('chatImageTool').hidden;
+  document.getElementById('sidebarToolNav').addEventListener('click', event => {
+    if (event.target.closest('[data-sidebar-action="images"]')) {
+      setView('chat');
+      const imageTool = document.getElementById('chatImageTool');
+      imageTool.hidden = !imageTool.hidden;
       document.getElementById('chatImageStatus').textContent = '';
+      closeSidebar();
       return;
     }
-    const button = event.target.closest('[data-chat-tool]');
+    const button = event.target.closest('[data-sidebar-tool]');
     if (!button) return;
-    setView(button.dataset.chatTool);
+    setView(button.dataset.sidebarTool);
     closeSidebar();
   });
   // default chat view
@@ -332,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Send message
   function showChatCommandHelp() {
-    toast('/ajuda · 900 comandos: abra Atalhos e pesquise · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
+    toast('/ajuda · 900 comandos: abra Ferramentas e atalhos no menu lateral · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
   }
   function handleChatCommand(text) {
     if (!text.startsWith('/')) return false;
