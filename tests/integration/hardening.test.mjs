@@ -76,6 +76,16 @@ test('configuracoes: valor vazio limpa a configuracao em vez de falhar', async (
   for (const key of ['ai_timeout_ms', 'ai_quality', 'ai_provider']) assert.equal((await j('PUT', `/api/settings/${key}`, { value: '' })).status, 200);
 });
 
+test('configuracao do contexto Ollama aceita apenas os tamanhos documentados', async () => {
+  const settings = await (await j('GET', '/api/settings')).json();
+  assert.equal(settings.defaults.ai_context_tokens, 16384);
+  for (const value of [4096, 8192, 16384, 32768]) {
+    assert.equal((await j('PUT', '/api/settings/ai_context_tokens', { value })).status, 200);
+  }
+  assert.equal((await j('PUT', '/api/settings/ai_context_tokens', { value: 12345 })).status, 400);
+  assert.equal((await j('PUT', '/api/settings/ai_context_tokens', { value: 'muito' })).status, 400);
+});
+
 test('pesquisa web vem desativada por padrao', async () => {
   assert.equal((await j('POST', '/api/research', { query: 'x' })).status, 403);
 });
