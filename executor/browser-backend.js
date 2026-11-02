@@ -4,10 +4,10 @@
  * Mantem os mesmos formatos de resposta do backend Node (CORE/backend). */
 (() => {
   'use strict';
-  const VERSION = '2.3.2';
-  const DEFAULTS = { ai_provider: 'auto', ollama_base_url: 'http://127.0.0.1:11434', ollama_model: 'qwen3.5:4b' };
+  const VERSION = '2.5.8';
+  const DEFAULTS = { ai_provider: 'auto', ai_context_tokens: 16384, ollama_base_url: 'http://127.0.0.1:11434', ollama_model: 'qwen2.5:3b' };
   const ALLOWED = new Set(['ai_provider', 'ollama_base_url', 'ollama_model', 'openai_base_url', 'openai_api_key', 'openai_model',
-    'ai_timeout_ms', 'theme', 'language', 'memory_enabled', 'max_upload_bytes', 'research_enabled', 'ai_quality']);
+    'ai_timeout_ms', 'ai_context_tokens', 'theme', 'language', 'memory_enabled', 'max_upload_bytes', 'research_enabled', 'ai_quality']);
   const MAX_UPLOAD = 512 * 1024 * 1024;
   const MEMORY_MAX = 5000;
   const realFetch = window.fetch.bind(window);
@@ -62,9 +62,14 @@
   const getSetting = (k, d = null) => (db.settings[k] !== undefined && db.settings[k] !== '' ? db.settings[k] : d);
   function qualityOptions() {
     const q = getSetting('ai_quality', 'medium');
-    if (q === 'low') return { temperature: 0.5, maxTokens: 2048 };
-    if (q === 'high') return { temperature: 0.7, maxTokens: 16384 };
-    return { temperature: 0.7, maxTokens: 8192 };
+    const contextValue = Number(getSetting('ai_context_tokens', 16384));
+    const numCtx = [4096, 8192, 16384, 32768].includes(contextValue) ? contextValue : 16384;
+    const options = q === 'low'
+      ? { temperature: 0.5, maxTokens: 2048 }
+      : q === 'high'
+        ? { temperature: 0.7, maxTokens: 16384 }
+        : { temperature: 0.7, maxTokens: 8192 };
+    return { ...options, numCtx };
   }
   function resolveRuntime(providerOverride, modelOverride) {
     const name = providerOverride || getSetting('ai_provider', DEFAULTS.ai_provider);
@@ -91,7 +96,7 @@
     } : {
       kind: 'down',
       short: `O Ollama nao esta ligado em ${base}. Rode "ollama serve" (instale em ollama.com) e baixe um modelo; ou use o modo demonstracao.`,
-      long: `Nao ha nada respondendo em ${base}.\n• Instale o Ollama (ollama.com), abra um terminal e rode:  ollama serve\n• Baixe um modelo:  ollama pull qwen3:4b  (depois escolha-o em Configuracoes > Modelos IA)\n• Ou use o botao abaixo para testar a interface sem IA.`,
+      long: `Nao ha nada respondendo em ${base}.\n• Instale o Ollama (ollama.com), abra um terminal e rode:  ollama serve\n• Baixe um modelo:  ollama pull qwen2.5:3b  (depois escolha-o em Configuracoes > Modelos IA)\n• Ou use o botao abaixo para testar a interface sem IA.`,
     };
     lastProblem = p; showBanner(p); return p;
   }
@@ -595,7 +600,7 @@
     }
 
     // configuracoes
-    if (path === '/api/settings' && method === 'GET') return json(200, { settings: settingsMasked(), defaults: { ai_provider: DEFAULTS.ai_provider, ollama_base_url: DEFAULTS.ollama_base_url, ollama_model: DEFAULTS.ollama_model } });
+    if (path === '/api/settings' && method === 'GET') return json(200, { settings: settingsMasked(), defaults: { ai_provider: DEFAULTS.ai_provider, ai_context_tokens: DEFAULTS.ai_context_tokens, ollama_base_url: DEFAULTS.ollama_base_url, ollama_model: DEFAULTS.ollama_model } });
     if ((m = path.match(/^\/api\/settings\/([^/]+)$/))) {
       const key = decodeURIComponent(m[1]);
       if (method === 'GET') {
@@ -616,6 +621,7 @@
         if (key === 'ai_timeout_ms' && (isNaN(Number(value)) || Number(value) < 1000)) return err(400, 'timeout invalido');
         if (key === 'ai_provider' && !['auto', 'ollama', 'openai-compatible', 'base', 'mock'].includes(value)) return err(400, 'provedor invalido');
         if (key === 'ai_quality' && !['low', 'medium', 'high'].includes(value)) return err(400, 'qualidade invalida');
+        if (key === 'ai_context_tokens' && ![4096, 8192, 16384, 32768].includes(Number(value))) return err(400, 'Contexto deve ser 4096, 8192, 16384 ou 32768 tokens.');
         db.settings[key] = value; save();
         return json(200, { ok: true, key, value: key === 'openai_api_key' ? '***' + String(value).slice(-4) : value });
       }

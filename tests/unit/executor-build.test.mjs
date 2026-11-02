@@ -14,8 +14,9 @@ test('JARVES_EXECUTOR.html e gerado como arquivo unico, sem referencias externas
   assert.ok(html.includes('jarves-executor'), 'backend de navegador embutido');
   assert.ok(html.includes('id="chatArea"'), 'interface embutida');
   // Includes generated preview scripts as strings embedded in the base engine.
-  assert.equal((html.match(/<script>/g) || []).length, 20);
-  assert.ok(html.includes('Ferramentas e atalhos') && html.includes('Comandos de IA'), 'catalogo de comandos embutido');
+  assert.equal((html.match(/<script>/g) || []).length, 23);
+  assert.doesNotMatch(html, /id="sidebarTools"/, 'ferramentas nao ficam no menu lateral');
+  assert.ok(html.includes('Atalhos') && html.includes('Pesquisar comandos de IA'), 'atalhos e catalogo de comandos embutidos');
   assert.ok(html.includes('jarvesCommandCatalog'), 'catalogo carregado no executor offline');
   assert.ok(html.includes('JARVES_BASE'), 'IA base embutida');
 });

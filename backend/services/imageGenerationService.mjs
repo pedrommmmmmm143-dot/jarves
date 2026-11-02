@@ -1,5 +1,5 @@
-import { isIP } from 'node:net';
 import { getSetting } from '../../database/repositories/settingsRepository.mjs';
+import { validateLocalGeneratorUrl } from './localGeneratorUrl.mjs';
 
 export const DEFAULT_IMAGE_GENERATOR_URL = 'http://127.0.0.1:7860';
 
@@ -8,31 +8,12 @@ const MAX_IMAGE_BYTES = 16 * 1024 * 1024;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 let generationInProgress = false;
 
-function isPrivateAddress(host) {
-  if (host === 'localhost') return true;
-  const family = isIP(host);
-  if (family === 4) {
-    const [a, b] = host.split('.').map(Number);
-    return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31)
-      || (a === 192 && b === 168) || (a === 169 && b === 254);
-  }
-  if (family === 6) {
-    const normalized = host.toLowerCase();
-    return normalized === '::1' || /^f[cd]/.test(normalized) || /^fe[89ab]/.test(normalized);
-  }
-  return false;
-}
-
 export function validateImageGeneratorUrl(value) {
-  let url;
-  try { url = new URL(String(value)); }
-  catch { throw new Error('Endereço inválido. Use o endereço HTTP local do Automatic1111 ou Forge.'); }
-  const host = url.hostname.replace(/^\[|\]$/g, '').toLowerCase();
-  if (url.protocol !== 'http:' || !isPrivateAddress(host) || url.username || url.password
-      || (url.pathname !== '/' && url.pathname !== '') || url.search || url.hash) {
-    throw new Error('Use HTTP sem caminho, usuário ou senha e um endereço local ou privado, por exemplo http://127.0.0.1:7860.');
+  try { return validateLocalGeneratorUrl(value, 'Automatic1111/Forge', '7860'); }
+  catch (error) {
+    if (error.message.startsWith('Use HTTP')) throw error;
+    throw new Error('Endereço inválido. Use o endereço HTTP local do Automatic1111 ou Forge.');
   }
-  return url.origin;
 }
 
 function imageGeneratorUrl() {

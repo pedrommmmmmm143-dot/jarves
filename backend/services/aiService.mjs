@@ -4,9 +4,14 @@ import { getSetting } from '../../database/repositories/settingsRepository.mjs';
 export function getQualityOptions() {
   // Padrao 'medium': o antigo padrao 'low' cortava TODAS as respostas em 128 tokens.
   const q = getSetting('ai_quality', null) || process.env.AI_QUALITY || 'medium';
-  if (q === 'low') return { temperature: 0.5, maxTokens: 2048 };
-  if (q === 'high') return { temperature: 0.7, maxTokens: 16384 };
-  return { temperature: 0.7, maxTokens: 8192 };
+  const contextValue = Number(getSetting('ai_context_tokens', null) || process.env.AI_CONTEXT_TOKENS || 16384);
+  const numCtx = [4096, 8192, 16384, 32768].includes(contextValue) ? contextValue : 16384;
+  const qualityOptions = q === 'low'
+    ? { temperature: 0.5, maxTokens: 2048 }
+    : q === 'high'
+      ? { temperature: 0.7, maxTokens: 16384 }
+      : { temperature: 0.7, maxTokens: 8192 };
+  return { ...qualityOptions, numCtx };
 }
 
 export function resolveRuntime(providerOverride = null, modelOverride = null) {

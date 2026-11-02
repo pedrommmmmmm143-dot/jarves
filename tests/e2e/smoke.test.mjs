@@ -16,27 +16,33 @@ test('frontend index exists and has key controls', () => {
   const workspaceNavigation = html.match(/<nav class="tool-nav workspace-nav" aria-label="Preferências">([\s\S]*?)<\/nav>/)?.[1] || '';
   assert.deepEqual([...workspaceNavigation.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]), ['settings']);
   assert.match(html, /aria-label="Preferências"[\s\S]*data-view="settings"/);
-  const sidebarTools = html.match(/<details class="sidebar-tools"[\s\S]*?<\/nav>/)?.[0] || '';
-  const sidebarToolNav = html.match(/<nav class="tool-nav sidebar-tool-nav"[\s\S]*?<\/nav>/)?.[0] || '';
-  assert.match(html, /id="sidebarTools"[\s\S]*id="sidebarToolNav"/);
-  assert.deepEqual([...sidebarToolNav.matchAll(/data-sidebar-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio']);
-  assert.match(sidebarToolNav, /data-sidebar-action="images"/);
+  assert.doesNotMatch(html, /id="sidebarTools"|id="sidebarToolNav"/);
+  const chatQuickActions = html.match(/<nav class="chat-quick-actions"[\s\S]*?<\/nav>/)?.[0] || '';
+  assert.deepEqual([...chatQuickActions.matchAll(/data-sidebar-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio']);
+  assert.match(chatQuickActions, /data-sidebar-action="images"/);
   assert.doesNotMatch(html, /id="btnChatTools"|>Atalhos<\/button>/);
   assert.match(html, /id="commandCatalogSearch"/);
   assert.match(html, /id="commandCatalogResults"/);
-  assert.match(html, /Comandos de IA <span>900<\/span>/);
+  assert.match(html, /Pesquisar comandos de IA/);
+  assert.match(html, /Pesquisar entre 900 comandos/);
   assert.match(html, /\/scripts\/commands\.js/);
   assert.match(html, /id="chatImagePrompt"[\s\S]*id="btnGenerateChatImage"/);
+  assert.match(html, /id="chatVideoPrompt"[\s\S]*id="btnGenerateChatVideo"/);
+  assert.match(html, /id="videoWorkflowJson"/);
+  assert.match(html, /id="videoPromptNodeId"/);
+  assert.match(html, /id="btnTestVideoGenerator"/);
   for (const id of ['view-roblox-studio','btnRobloxPair','robloxBridgeAddress','robloxBridgeToken','btnCopyRobloxToken','robloxScriptName','robloxScriptTarget','robloxScriptSource','btnQueueRobloxScript']) {
     assert.ok(html.includes(`id="${id}"`), 'missing Roblox Studio control ' + id);
   }
   assert.match(html, /Plugins → Save as Local Plugin/);
   assert.match(html, /Wine não é suportado oficialmente/);
-  for (const id of ['sidebarTools','sidebarToolNav','btnBackToChat','btnVoice','voiceCommandStatus','btnSound']) assert.ok(html.includes(`id="${id}"`), 'missing sidebar chat control ' + id);
+  for (const id of ['chat-resources','btnBackToChat','btnVoice','voiceCommandStatus','btnSound']) assert.ok(html.includes(`id="${id}"`), 'missing chat control ' + id);
   assert.match(html, /id="memoryEnabled"/);
   assert.match(html, /id="memoryStatus"/);
   assert.match(html, /id="view-html-tests"[\s\S]*id="btnRunHtmlTests"/);
   const generator = fs.readFileSync(path.join(root, 'frontend/scripts/gerador.js'), 'utf8');
+  const serviceWorker = fs.readFileSync(path.join(root, 'frontend/sw.js'), 'utf8');
+  const executorBuilder = fs.readFileSync(path.join(root, 'scripts/build-executor.mjs'), 'utf8');
   assert.match(generator, /value="modelo-3d"/);
   assert.match(generator, /value="codigo">Projeto de código com IA/);
   for (const language of ['html','css','javascript','typescript','python','java','c','cpp','php','json','xml','gdscript','shell']) {
@@ -44,6 +50,11 @@ test('frontend index exists and has key controls', () => {
   }
   assert.match(generator, /parseGeneratedCodeProject/);
   assert.match(generator, /Automatic1111\/Forge/);
+  assert.match(generator, /validateInlineScripts/);
+  assert.match(serviceWorker, /scripts\/media-intents\.js/);
+  assert.match(serviceWorker, /scripts\/generated-html\.js/);
+  assert.ok(executorBuilder.indexOf("'media-intents.js'") < executorBuilder.indexOf("'app.js'"));
+  assert.ok(executorBuilder.indexOf("'generated-html.js'") < executorBuilder.indexOf("'app.js'"));
   assert.match(generator, /generateImage\(\{ prompt, width: 768, height: 768, steps: 20 \}\)/);
   assert.match(generator, /encoding: 'base64'/);
   assert.match(generator, /provider: 'ollama'/);
@@ -53,8 +64,15 @@ test('frontend index exists and has key controls', () => {
     assert.ok(html.includes(`id="${id}"`), 'missing preference/diagnostic control ' + id);
   }
   const appScript = fs.readFileSync(path.join(root, 'frontend/scripts/app.js'), 'utf8');
+  const videoService = fs.readFileSync(path.join(root, 'backend/services/videoGenerationService.mjs'), 'utf8');
+  const videoRoutes = fs.readFileSync(path.join(root, 'backend/routes/videos.mjs'), 'utf8');
   assert.match(appScript, /window\.jarvesCommandCatalog\?\.get\(text\)/);
   assert.match(appScript, /api\.generateImage\(\{ prompt, width: size, height: size, steps: 20 \}\)/);
+  assert.match(appScript, /getVideoPrompt\(text\)/);
+  assert.match(appScript, /api\.generateVideo\(prompt\)/);
+  assert.match(videoService, /DEFAULT_VIDEO_GENERATOR_URL/);
+  assert.match(videoService, /MAX_VIDEO_BYTES/);
+  assert.match(videoRoutes, /generateVideo/);
   assert.match(appScript, /generated-image-message/);
   assert.match(appScript, /playResponseSound\(\)/);
   assert.match(appScript, /systemPrompt: buildPersonalizationPrompt\(\)/);
@@ -124,6 +142,8 @@ test('Linux packaging builds only an x64 AppImage and uploads it from CI', () =>
   assert.match(androidActivity, /addJavascriptInterface\(new NativeSettingsBridge\(\), "JarvesAndroid"\)/);
   assert.match(androidActivity, /onShowFileChooser/);
   const appScript = fs.readFileSync(path.join(root, 'frontend/scripts/app.js'), 'utf8');
+  assert.match(appScript, /ai_context_tokens/);
+  assert.match(fs.readFileSync(path.join(root, 'executor/browser-backend.js'), 'utf8'), /ai_context_tokens/);
   assert.match(appScript, /createImageBitmap\(file\)/);
   assert.match(appScript, /500_000/);
   assert.match(workflow, /npm run build:linux/);
@@ -139,10 +159,12 @@ test('Android launcher icons target the declared activity and expose only packag
   const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const androidBuild = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
   const environment = fs.readFileSync(path.join(root, 'backend/config/env.mjs'), 'utf8');
-  assert.equal(packageJson.version, '2.5.2');
-  assert.match(androidBuild, /versionCode 252/);
-  assert.match(androidBuild, /versionName '2.5.2'/);
-  assert.match(environment, /APP_VERSION = '2.5.2'/);
+  assert.equal(packageJson.version, '2.5.8');
+  assert.match(androidBuild, /versionCode 258/);
+  assert.match(androidBuild, /versionName '2.5.8'/);
+  assert.match(environment, /APP_VERSION = '2.5.8'/);
+  assert.match(fs.readFileSync(path.join(root, 'frontend/index.html'), 'utf8'), /2\.5\.8/);
+  assert.match(fs.readFileSync(path.join(root, 'frontend/sw.js'), 'utf8'), /jarves-ai-2\.5\.8/);
   const manifest = fs.readFileSync(path.join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
   for (const permission of ['INTERNET', 'ACCESS_NETWORK_STATE', 'ACCESS_WIFI_STATE', 'CHANGE_NETWORK_STATE', 'CHANGE_WIFI_MULTICAST_STATE', 'RECORD_AUDIO']) {
     assert.match(manifest, new RegExp(`android:name="android\\.permission\\.${permission}"`));

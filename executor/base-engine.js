@@ -141,7 +141,7 @@ init();
     if (/quem (e|eh) voce|seu nome|quem te criou/.test(q)) return 'Sou o JARVES AI. Agora estou na **IA base** local; se o Ollama estiver ligado, passo a usar o modelo dele automaticamente.';
     if (/ajuda|o que voce (faz|sabe)|comandos|funcoes/.test(q)) return 'Na **IA base** eu faço: jogos HTML prontos (cobrinha, pong, velha, memória), contas, data e hora. Com o **Ollama** ligado eu converso sobre qualquer assunto, escrevo textos e códigos. Digite "faz um jogo" para começar.';
 
-    return 'Estou na **IA base** (offline), que entende jogos, contas, data/hora e o básico. Para esse tipo de pedido preciso de um modelo completo: instale o Ollama (ollama.com), rode `ollama pull qwen3:4b` e reabra o JARVES; ele detecta sozinho. Enquanto isso, que tal um jogo? Digite "faz um jogo".';
+    return 'Estou na **IA base** (offline), que entende jogos, contas, data/hora e o básico. Para esse tipo de pedido preciso de um modelo completo: instale o Ollama (ollama.com), rode `ollama pull qwen2.5:3b` e reabra o JARVES; ele detecta sozinho. Enquanto isso, que tal um jogo? Digite "faz um jogo".';
   }
 
 
