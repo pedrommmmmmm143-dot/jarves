@@ -23,6 +23,28 @@
       <button class="nav-btn active" data-view="chat" type="button"><span>✧</span> Chat</button>
       <a class="nav-btn" href="/download.html"><span>⇩</span> Baixar aplicativo</a>
     </nav>
+    <details class="sidebar-tools" id="sidebarTools" open>
+      <summary><span>◈</span> Ferramentas e atalhos <small>900 comandos</small></summary>
+      <nav class="tool-nav sidebar-tool-nav" id="sidebarToolNav" aria-label="Ferramentas e atalhos">
+        <button class="nav-btn" data-sidebar-action="images" type="button"><span>▧</span> Gerar imagem PNG</button>
+        <button class="nav-btn" data-sidebar-tool="gerador" type="button"><span>✦</span> Gerador 2D/3D</button>
+        <button class="nav-btn" data-sidebar-tool="voice-studio" type="button"><span>♫</span> Voz e vídeo</button>
+        <button class="nav-btn" data-sidebar-tool="html-tests" type="button"><span>⌘</span> Testes HTML</button>
+        <button class="nav-btn" data-sidebar-tool="reports" type="button"><span>▤</span> Relatórios</button>
+        <button class="nav-btn" data-sidebar-tool="agents" type="button"><span>✧</span> Agentes</button>
+        <button class="nav-btn" data-sidebar-tool="tasks" type="button"><span>◷</span> Tarefas</button>
+        <button class="nav-btn" data-sidebar-tool="files" type="button"><span>▤</span> Arquivos e código</button>
+        <button class="nav-btn" data-sidebar-tool="memory" type="button"><span>◈</span> Memória</button>
+        <button class="nav-btn" data-sidebar-tool="roblox-studio" type="button"><span>◉</span> Roblox Studio</button>
+      </nav>
+      <details class="sidebar-command-catalog" id="commandCatalogDetails">
+        <summary>Comandos de IA <span>900</span></summary>
+        <label class="sr-only" for="commandCatalogSearch">Pesquisar comandos</label>
+        <input id="commandCatalogSearch" type="search" maxlength="80" placeholder="Pesquisar comando..." autocomplete="off">
+        <div class="command-catalog-results" id="commandCatalogResults" role="list"></div>
+        <span id="commandCatalogCount" role="status" aria-live="polite">12 de 900 comandos</span>
+      </details>
+    </details>
     <nav class="tool-nav workspace-nav" aria-label="Preferências">
       <button class="nav-btn" data-view="settings" type="button"><span>⚙</span> Configurações</button>
     </nav>
@@ -41,7 +63,6 @@
       <div class="topbar-left"><button class="icon-btn menu-btn" id="btnMenu" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰</button><div><div class="topbar-title" id="convTitle">Nova conversa</div><div class="topbar-subtitle" id="providerSubtitle">Seu espaço de inteligência</div></div></div>
       <div class="topbar-actions">
         <select id="modelSelect" aria-label="Selecionar modelo"><option value="">Modelo automático</option></select>
-        <button class="secondary-btn" id="btnChatTools" type="button" aria-expanded="false" aria-controls="chatTools">Atalhos</button>
         <button class="secondary-btn" id="btnBackToChat" type="button" hidden>← Chat</button>
         <button class="icon-btn" id="btnTheme" aria-label="Alternar tema" title="Alternar tema">◐</button>
         <button class="icon-btn" id="btnClear" aria-label="Limpar tela" title="Limpar tela">⌫</button>
@@ -52,40 +73,18 @@
       <div class="chat-area" id="chatArea" role="log" aria-live="polite">
         <div class="welcome" id="welcomePanel"><div class="welcome-orb" id="welcomeOrb">J</div>        <p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div></div>
       </div>
-      <section class="chat-tools panel" id="chatTools" aria-label="Ferramentas do Chat" hidden>
-        <div class="row html-test-toolbar"><div><h3>Ferramentas do Chat</h3><p class="muted-copy">Abra recursos sem sair do espaço principal do Chat.</p></div><button class="icon-btn" id="btnCloseChatTools" type="button" aria-label="Fechar ferramentas">×</button></div>
-        <div class="command-catalog" role="region" aria-labelledby="commandCatalogTitle">
-          <div class="command-catalog-heading"><div><h3 id="commandCatalogTitle">900 comandos prontos</h3><p class="muted-copy">Pesquise por assunto ou ação. Escolher só preenche o chat; você decide quando enviar.</p></div><span id="commandCatalogCount" role="status" aria-live="polite">900 comandos</span></div>
-          <label class="sr-only" for="commandCatalogSearch">Pesquisar comandos</label>
-          <input id="commandCatalogSearch" type="search" maxlength="80" placeholder="Ex.: /python-depurar, revisar HTML, planejar..." autocomplete="off">
-          <div class="command-catalog-results" id="commandCatalogResults" role="list"></div>
+      <section class="chat-image-tool panel" id="chatImageTool" aria-label="Gerar imagem para a conversa" hidden>
+        <h3>Imagem completa com IA local</h3>
+        <p class="muted-copy">Usa Automatic1111/Forge instalado e configurado no computador. Configure no menu lateral → Ferramentas e atalhos → Gerador 2D/3D → Configurar IA de imagem local. Não chama serviços pagos; a imagem aparece nesta conversa e pode ser baixada como PNG.</p>
+        <label for="chatImagePrompt">Descreva a imagem</label>
+        <textarea id="chatImagePrompt" maxlength="1200" placeholder="Ex.: paisagem cyberpunk à noite, chuva neon, arte digital detalhada"></textarea>
+        <div class="row">
+          <label for="chatImageSize">Resolução
+            <select id="chatImageSize"><option value="512">512 × 512</option><option value="768" selected>768 × 768</option><option value="1024">1024 × 1024</option></select>
+          </label>
+          <button class="primary-btn" id="btnGenerateChatImage" type="button">Gerar imagem</button>
+          <span class="status" id="chatImageStatus" role="status" aria-live="polite"></span>
         </div>
-        <div class="card-grid chat-tool-grid">
-          <button type="button" data-chat-action="images"><strong>▧ Gerar imagem PNG</strong><small>Crie uma imagem completa com Automatic1111/Forge local</small></button>
-          <button type="button" data-chat-tool="gerador"><strong>✦ Gerador 2D/3D</strong><small>SVG, modelos 3D e HTML interativo</small></button>
-          <button type="button" data-chat-tool="voice-studio"><strong>♫ Voz e vídeo</strong><small>Narração e prévia de vídeo local</small></button>
-          <button type="button" data-chat-tool="html-tests"><strong>⌘ Testes HTML</strong><small>Verificações e diagnóstico do sistema</small></button>
-          <button type="button" data-chat-tool="reports"><strong>▤ Relatórios</strong><small>Resultados de erros e bugs</small></button>
-          <button type="button" data-chat-tool="agents"><strong>✧ Agentes</strong><small>Assistentes especializados</small></button>
-          <button type="button" data-chat-tool="tasks"><strong>◷ Tarefas</strong><small>Planejar e acompanhar etapas</small></button>
-          <button type="button" data-chat-tool="files"><strong>▤ Arquivos e código</strong><small>Importar, revisar e analisar</small></button>
-          <button type="button" data-chat-tool="memory"><strong>◈ Memória</strong><small>Notas e contexto persistente</small></button>
-          <button type="button" data-chat-tool="roblox-studio"><strong>◉ Roblox Studio</strong><small>Conexão local e envio de scripts com aprovação</small></button>
-          <button type="button" data-chat-tool="settings"><strong>⚙ Configurações</strong><small>Voz, visual, IA e preferências</small></button>
-        </div>
-        <section class="chat-image-tool panel" id="chatImageTool" aria-label="Gerar imagem para a conversa" hidden>
-          <h3>Imagem completa com IA local</h3>
-          <p class="muted-copy">Usa Automatic1111/Forge instalado e configurado no computador. Configure em Atalhos → Gerador 2D/3D → Configurar IA de imagem local. Não chama serviços pagos; a imagem aparece nesta conversa e pode ser baixada como PNG.</p>
-          <label for="chatImagePrompt">Descreva a imagem</label>
-          <textarea id="chatImagePrompt" maxlength="1200" placeholder="Ex.: paisagem cyberpunk à noite, chuva neon, arte digital detalhada"></textarea>
-          <div class="row">
-            <label for="chatImageSize">Resolução
-              <select id="chatImageSize"><option value="512">512 × 512</option><option value="768" selected>768 × 768</option><option value="1024">1024 × 1024</option></select>
-            </label>
-            <button class="primary-btn" id="btnGenerateChatImage" type="button">Gerar imagem</button>
-            <span class="status" id="chatImageStatus" role="status" aria-live="polite"></span>
-          </div>
-        </section>
       </section>
       <div class="suggestions" id="suggestions"></div>
       <div class="composer-wrap"><div class="composer">
