@@ -8,6 +8,7 @@ import healthRouter from './routes/health.mjs';
 import convRouter from './routes/conversations.mjs';
 import chatRouter from './routes/chat.mjs';
 import modelsRouter from './routes/models.mjs';
+import profilesRouter from './routes/profiles.mjs';
 import settingsRouter from './routes/settings.mjs';
 import memoryRouter from './routes/memory.mjs';
 import filesRouter from './routes/files.mjs';
@@ -15,6 +16,7 @@ import tasksRouter from './routes/tasks.mjs';
 import researchRouter from './routes/research.mjs';
 import diagnosticsRouter from './routes/diagnostics.mjs';
 import imagesRouter from './routes/images.mjs';
+import videosRouter from './routes/videos.mjs';
 import robloxRouter from './routes/roblox.mjs';
 
 ensureDirs();
@@ -37,6 +39,7 @@ app.use('/api/health', healthRouter);
 app.use('/api/conversations', convRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/models', modelsRouter);
+app.use('/api/profiles', profilesRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/memory', memoryRouter);
 app.use('/api/files', filesRouter);
@@ -44,6 +47,7 @@ app.use('/api/tasks', adminGuard, tasksRouter);
 app.use('/api/research', researchRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/images', imagesRouter);
+app.use('/api/videos', videosRouter);
 app.use('/api/roblox', robloxRouter);
 
 // Public preview of uploaded file as site

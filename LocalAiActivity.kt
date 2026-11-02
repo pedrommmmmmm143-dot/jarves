@@ -204,7 +204,7 @@ class LocalAiActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(2), dp(4), dp(2), dp(12))
         }
-        chatScroll.addView(chatMessages, ScrollView.LayoutParams(-1, -2))
+        chatScroll.addView(chatMessages, ViewGroup.LayoutParams(-1, -2))
         root.addView(chatScroll, LinearLayout.LayoutParams(-1, 0, 1f))
 
         val composer = LinearLayout(this).apply {
@@ -428,7 +428,7 @@ class LocalAiActivity : Activity() {
             connectTimeout = 20_000
             readTimeout = 60_000
             instanceFollowRedirects = true
-            setRequestProperty("User-Agent", "JARVES-AI-Android/2.4.0")
+            setRequestProperty("User-Agent", "JARVES-AI-Android/2.5.8")
             if (offset > 0L) setRequestProperty("Range", "bytes=$offset-")
         }
         activeConnection = connection

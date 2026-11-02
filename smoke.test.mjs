@@ -12,30 +12,76 @@ test('frontend index exists and has key controls', () => {
   }
   const navigation = html.match(/<nav class="tool-nav primary-nav"[\s\S]*?<\/nav>/)?.[0] || '';
   assert.deepEqual([...navigation.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]), ['chat']);
-  const workspaceNavigation = html.match(/<nav class="tool-nav workspace-nav" aria-label="Ferramentas e espaços">([\s\S]*?)<\/nav>/)?.[1] || '';
-  assert.deepEqual([...workspaceNavigation.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio']);
+  assert.doesNotMatch(html, /sidebar-section-label">FERRAMENTAS/);
+  const workspaceNavigation = html.match(/<nav class="tool-nav workspace-nav" aria-label="Preferências">([\s\S]*?)<\/nav>/)?.[1] || '';
+  assert.deepEqual([...workspaceNavigation.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]), ['settings']);
   assert.match(html, /aria-label="Preferências"[\s\S]*data-view="settings"/);
-  const chatTools = html.match(/<section class="chat-tools[\s\S]*?<\/section>/)?.[0] || '';
-  assert.deepEqual([...chatTools.matchAll(/data-chat-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio', 'settings']);
+  assert.doesNotMatch(html, /id="sidebarTools"|id="sidebarToolNav"/);
+  const chatQuickActions = html.match(/<nav class="chat-quick-actions"[\s\S]*?<\/nav>/)?.[0] || '';
+  assert.deepEqual([...chatQuickActions.matchAll(/data-sidebar-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio']);
+  assert.match(chatQuickActions, /data-sidebar-action="images"/);
+  assert.doesNotMatch(html, /id="btnChatTools"|>Atalhos<\/button>/);
+  assert.match(html, /id="commandCatalogSearch"/);
+  assert.match(html, /id="commandCatalogResults"/);
+  assert.match(html, /Pesquisar comandos de IA/);
+  assert.match(html, /Pesquisar entre 900 comandos/);
+  assert.match(html, /\/scripts\/commands\.js/);
+  assert.match(html, /id="chatImagePrompt"[\s\S]*id="btnGenerateChatImage"/);
+  assert.match(html, /id="chatVideoPrompt"[\s\S]*id="btnGenerateChatVideo"/);
+  assert.match(html, /id="videoWorkflowJson"/);
+  assert.match(html, /id="videoPromptNodeId"/);
+  assert.match(html, /id="btnTestVideoGenerator"/);
   for (const id of ['view-roblox-studio','btnRobloxPair','robloxBridgeAddress','robloxBridgeToken','btnCopyRobloxToken','robloxScriptName','robloxScriptTarget','robloxScriptSource','btnQueueRobloxScript']) {
     assert.ok(html.includes(`id="${id}"`), 'missing Roblox Studio control ' + id);
   }
   assert.match(html, /Plugins → Save as Local Plugin/);
   assert.match(html, /Wine não é suportado oficialmente/);
-  for (const id of ['btnChatTools','btnCloseChatTools','btnBackToChat','chatTools','btnVoice','voiceCommandStatus']) assert.ok(html.includes(`id="${id}"`), 'missing unified chat control ' + id);
+  for (const id of ['chat-resources','btnBackToChat','btnVoice','voiceCommandStatus','btnSound']) assert.ok(html.includes(`id="${id}"`), 'missing chat control ' + id);
+  assert.match(html, /id="memoryEnabled"/);
+  assert.match(html, /id="memoryStatus"/);
   assert.match(html, /id="view-html-tests"[\s\S]*id="btnRunHtmlTests"/);
   const generator = fs.readFileSync(path.join(root, 'frontend/scripts/gerador.js'), 'utf8');
+  const serviceWorker = fs.readFileSync(path.join(root, 'frontend/sw.js'), 'utf8');
+  const executorBuilder = fs.readFileSync(path.join(root, 'scripts/build-executor.mjs'), 'utf8');
   assert.match(generator, /value="modelo-3d"/);
+  assert.match(generator, /value="codigo">Projeto de código com IA/);
+  for (const language of ['html','css','javascript','typescript','python','java','c','cpp','php','json','xml','gdscript','shell']) {
+    assert.ok(generator.includes(`value="${language}"`), `missing code generator language ${language}`);
+  }
+  assert.match(generator, /parseGeneratedCodeProject/);
   assert.match(generator, /Automatic1111\/Forge/);
+  assert.match(generator, /validateInlineScripts/);
+  assert.match(serviceWorker, /scripts\/media-intents\.js/);
+  assert.match(serviceWorker, /scripts\/generated-html\.js/);
+  assert.ok(executorBuilder.indexOf("'media-intents.js'") < executorBuilder.indexOf("'app.js'"));
+  assert.ok(executorBuilder.indexOf("'generated-html.js'") < executorBuilder.indexOf("'app.js'"));
   assert.match(generator, /generateImage\(\{ prompt, width: 768, height: 768, steps: 20 \}\)/);
   assert.match(generator, /encoding: 'base64'/);
   assert.match(generator, /provider: 'ollama'/);
   assert.doesNotMatch(generator, /nav\.insertBefore/);
   assert.match(navigation, /href="\/download\.html"/);
-  for (const id of ['aiDisplayName','accentColor','rgbMode','aiAvatarInput','aiAvatarPreview','btnResetAiAvatar','launcherIcon','launcherIconStatus','androidServerPanel','androidServerUrl','btnConnectAndroidServer','androidServerStatus','speechLanguage','speechVoice','speechRate','speechPitch','btnTestVoice','btnRunHtmlTests','btnRunDiag','repairInput','repairFile','btnAskFix','workflowGoal','btnWorkflowResearch','btnWorkflowPlan','btnWorkflowCreate','btnWorkflowExecute','btnWorkflowPreview','workflowPreview','studioNarration','studioVideoFile','studioVideo','btnSpeakNarration','btnPlayAndSpeak']) {
+  for (const id of ['aiDisplayName','accentColor','rgbMode','aiAvatarInput','aiAvatarPreview','btnResetAiAvatar','launcherIcon','launcherIconStatus','responseStyle','customInstructions','btnSaveAiBehavior','aiBehaviorStatus','androidServerPanel','androidServerUrl','btnConnectAndroidServer','androidServerStatus','speechLanguage','speechVoice','speechRate','speechPitch','btnTestVoice','btnRunHtmlTests','btnRunDiag','repairInput','repairFile','btnAskFix','workflowGoal','btnWorkflowResearch','btnWorkflowPlan','btnWorkflowCreate','btnWorkflowExecute','btnWorkflowPreview','workflowPreview','studioNarration','studioVideoFile','studioVideo','btnSpeakNarration','btnPlayAndSpeak']) {
     assert.ok(html.includes(`id="${id}"`), 'missing preference/diagnostic control ' + id);
   }
   const appScript = fs.readFileSync(path.join(root, 'frontend/scripts/app.js'), 'utf8');
+  const videoService = fs.readFileSync(path.join(root, 'backend/services/videoGenerationService.mjs'), 'utf8');
+  const videoRoutes = fs.readFileSync(path.join(root, 'backend/routes/videos.mjs'), 'utf8');
+  assert.match(appScript, /window\.jarvesCommandCatalog\?\.get\(text\)/);
+  assert.match(appScript, /api\.generateImage\(\{ prompt, width: size, height: size, steps: 20 \}\)/);
+  assert.match(appScript, /getVideoPrompt\(text\)/);
+  assert.match(appScript, /api\.generateVideo\(prompt\)/);
+  assert.match(videoService, /DEFAULT_VIDEO_GENERATOR_URL/);
+  assert.match(videoService, /MAX_VIDEO_BYTES/);
+  assert.match(videoRoutes, /generateVideo/);
+  assert.match(appScript, /generated-image-message/);
+  assert.match(appScript, /playResponseSound\(\)/);
+  assert.match(appScript, /systemPrompt: buildPersonalizationPrompt\(\)/);
+  assert.match(appScript, /function handleChatCommand\(text\)/);
+  for (const command of ['/ajuda','/tema','/cor','/voz','/estilo','/nome','/instrucoes','/som','/modelo']) {
+    assert.ok(appScript.includes(command), `missing chat customization command ${command}`);
+  }
+  assert.match(appScript, /customInstructions: typeof saved\.customInstructions === 'string' \? saved\.customInstructions\.slice\(0, 1200\)/);
+  assert.match(appScript, /responseStyle: \['concise', 'balanced', 'detailed', 'code'\]/);
   const robloxScript = fs.readFileSync(path.join(root, 'frontend/scripts/roblox-studio.js'), 'utf8');
   const robloxPlugin = fs.readFileSync(path.join(root, 'frontend/roblox-plugin/JARVESStudioPlugin.lua'), 'utf8');
   assert.match(robloxScript, /robloxPair\(\)/);
@@ -69,7 +115,7 @@ test('download page only enables APK, EXE, and AppImage downloads from a publish
   assert.match(html, /href="#download-options"/);
   assert.match(html, /href="https:\/\/github\.com\/pedrommmmmmm143-dot\/jarves\/releases\/latest"/);
   assert.match(html, /Sem links inventados/);
-  assert.match(html, /api\.github\.com\/repos\/\$\{repository\}\/releases\/latest/);
+  assert.match(html, /fetch\('\.\/release-assets\.json'/);
   assert.match(html, /asset\.name === 'app-debug\.apk'/);
   assert.match(html, /id="exe-link"/);
   assert.match(html, /JARVES-AI-Setup-.*x64\\\.exe/);
@@ -96,6 +142,8 @@ test('Linux packaging builds only an x64 AppImage and uploads it from CI', () =>
   assert.match(androidActivity, /addJavascriptInterface\(new NativeSettingsBridge\(\), "JarvesAndroid"\)/);
   assert.match(androidActivity, /onShowFileChooser/);
   const appScript = fs.readFileSync(path.join(root, 'frontend/scripts/app.js'), 'utf8');
+  assert.match(appScript, /ai_context_tokens/);
+  assert.match(fs.readFileSync(path.join(root, 'executor/browser-backend.js'), 'utf8'), /ai_context_tokens/);
   assert.match(appScript, /createImageBitmap\(file\)/);
   assert.match(appScript, /500_000/);
   assert.match(workflow, /npm run build:linux/);
@@ -111,9 +159,12 @@ test('Android launcher icons target the declared activity and expose only packag
   const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const androidBuild = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
   const environment = fs.readFileSync(path.join(root, 'backend/config/env.mjs'), 'utf8');
-  assert.equal(packageJson.version, '2.4.0');
-  assert.match(androidBuild, /versionCode 240[\s\S]*versionName '2\.4\.0'/);
-  assert.match(environment, /APP_VERSION = '2\.4\.0'/);
+  assert.equal(packageJson.version, '2.5.8');
+  assert.match(androidBuild, /versionCode 258/);
+  assert.match(androidBuild, /versionName '2.5.8'/);
+  assert.match(environment, /APP_VERSION = '2.5.8'/);
+  assert.match(fs.readFileSync(path.join(root, 'frontend/index.html'), 'utf8'), /2\.5\.8/);
+  assert.match(fs.readFileSync(path.join(root, 'frontend/sw.js'), 'utf8'), /jarves-ai-2\.5\.8/);
   const manifest = fs.readFileSync(path.join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
   for (const permission of ['INTERNET', 'ACCESS_NETWORK_STATE', 'ACCESS_WIFI_STATE', 'CHANGE_NETWORK_STATE', 'CHANGE_WIFI_MULTICAST_STATE', 'RECORD_AUDIO']) {
     assert.match(manifest, new RegExp(`android:name="android\\.permission\\.${permission}"`));
@@ -150,6 +201,7 @@ test('Android launcher icons target the declared activity and expose only packag
   assert.match(localAi, /HISTORY_KEY/);
   assert.match(localAi, /Apache-2\.0/);
   assert.match(localAi, /SUPPORTED_64_BIT_ABIS/);
+  assert.match(localAi, /addView\(chatMessages, ViewGroup\.LayoutParams/);
   assert.match(androidBuild, /litertlm-android:0\.19\.0/);
   const discovery = fs.readFileSync(path.join(root, 'backend/services/lanDiscovery.mjs'), 'utf8');
   assert.match(discovery, /type: 'jarves'/);
@@ -159,12 +211,19 @@ test('Android launcher icons target the declared activity and expose only packag
       assert.ok(fs.existsSync(path.join(root, `android/app/src/main/res/mipmap-${density}/${icon}`)), `${density}/${icon}`);
     }
   }
+  for (const icon of ['build/icon.png', 'build/icon.ico', 'frontend/assets/icon-192.png', 'frontend/assets/icon-512.png', 'frontend/assets/JERVER_AI_V1000_ICON_ARTWORK.png']) {
+    assert.ok(fs.existsSync(path.join(root, icon)), `missing branded icon ${icon}`);
+  }
 });
 
 test('GitHub Pages workflow publishes the downloads page as the site root', () => {
   const workflow = fs.readFileSync(path.join(root, '.github/workflows/pages.yml'), 'utf8');
   assert.match(workflow, /branches: \[main\]/);
   assert.match(workflow, /cp frontend\/download\.html public\/index\.html/);
+  assert.match(workflow, /cp frontend\/assets\/JERVER_AI_V1000_ICON_ARTWORK\.png public\/assets\/JERVER_AI_V1000_ICON_ARTWORK\.png/);
+  assert.match(workflow, /workflow_run:[\s\S]*Build JARVES Android APK[\s\S]*Build JARVES Windows EXE[\s\S]*Build JARVES Linux AppImage/);
+  assert.match(workflow, /releases\/latest/);
+  assert.match(workflow, /public\/release-assets\.json/);
   assert.match(workflow, /actions\/upload-pages-artifact@v3/);
   assert.match(workflow, /actions\/deploy-pages@v4/);
 });

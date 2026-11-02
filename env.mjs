@@ -21,13 +21,15 @@ function bool(name, def) {
   return v === 'true' || v === '1' || v === 'yes';
 }
 
-export const APP_VERSION = '2.4.0';
+export const APP_VERSION = '2.5.8';
+const aiContextTokens = num('AI_CONTEXT_TOKENS', 16384);
 
 export const env = {
   PORT: num('PORT', 3000),
   HOST: process.env.HOST || '0.0.0.0',
   NODE_ENV: process.env.NODE_ENV || 'development',
   AI_PROVIDER: process.env.AI_PROVIDER || 'auto',
+  AI_CONTEXT_TOKENS: [4096, 8192, 16384, 32768].includes(aiContextTokens) ? aiContextTokens : 16384,
   OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434',
   OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'qwen2.5:3b',
   OLLAMA_TIMEOUT_MS: num('OLLAMA_TIMEOUT_MS', 120000),

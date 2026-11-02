@@ -25,7 +25,7 @@ replaceOnce('<link rel="icon" href="/assets/icon-192.png">', `<link rel="icon" h
 replaceOnce('<link rel="stylesheet" href="/styles/main.css">', `<style>\n${read(path.join(fe, 'styles/main.css'))}\n</style>`);
 html = html.replace('class="brand" href="/"', 'class="brand" href="#"');
 
-const order = ['api.js', 'state.js', 'ui.js', 'particles.js', 'app.js', 'base-engine.js', 'gerador.js', 'html-tests.js', 'roblox-studio.js'];
+const order = ['api.js', 'state.js', 'ui.js', 'particles.js', 'commands.js', 'media-intents.js', 'generated-html.js', 'app.js', 'base-engine.js', 'gerador.js', 'html-tests.js', 'roblox-studio.js'];
 const tagLine = order.map(f => `<script src="/scripts/${f}"></script>`).join('');
 const inline = [
   `<script>\n${safeScript(read(path.join(root, 'executor/base-engine.js')), 'base-engine.js')}\n</script>`,

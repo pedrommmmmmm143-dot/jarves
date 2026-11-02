@@ -16,26 +16,13 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Menu principal">
     <div class="sidebar-header">
-      <a class="brand" href="/" aria-label="JARVES AI início"><span class="brand-mark" id="brandMark">J</span><span><b id="brandName">JARVES AI</b><small>2.4.0 · ROBLOX STUDIO</small></span></a>
+      <a class="brand" href="/" aria-label="JARVES AI início"><span class="brand-mark" id="brandMark">J</span><span><b id="brandName">JARVES AI</b><small>2.5.8 · ROBLOX STUDIO</small></span></a>
       <button class="icon-btn mobile-close" id="btnCloseSidebar" aria-label="Fechar menu">×</button>
     </div>
     <nav class="tool-nav primary-nav" aria-label="Navegação principal">
       <button class="nav-btn active" data-view="chat" type="button"><span>✧</span> Chat</button>
       <a class="nav-btn" href="/download.html"><span>⇩</span> Baixar aplicativo</a>
     </nav>
-    <div class="sidebar-section-label">FERRAMENTAS</div>
-    <nav class="tool-nav workspace-nav" aria-label="Ferramentas e espaços">
-      <button class="nav-btn" data-view="gerador" type="button"><span>✦</span> Gerador 2D/3D</button>
-      <button class="nav-btn" data-view="voice-studio" type="button"><span>♫</span> Voz e vídeo</button>
-      <button class="nav-btn" data-view="html-tests" type="button"><span>⌘</span> Testes HTML</button>
-      <button class="nav-btn" data-view="reports" type="button"><span>▤</span> Relatórios</button>
-      <button class="nav-btn" data-view="agents" type="button"><span>✧</span> Agentes</button>
-      <button class="nav-btn" data-view="tasks" type="button"><span>◷</span> Tarefas</button>
-      <button class="nav-btn" data-view="files" type="button"><span>▤</span> Arquivos e código</button>
-      <button class="nav-btn" data-view="memory" type="button"><span>◈</span> Memória</button>
-      <button class="nav-btn" data-view="roblox-studio" type="button"><span>◉</span> Roblox Studio</button>
-    </nav>
-    <div class="sidebar-section-label preferences-label">PREFERÊNCIAS</div>
     <nav class="tool-nav workspace-nav" aria-label="Preferências">
       <button class="nav-btn" data-view="settings" type="button"><span>⚙</span> Configurações</button>
     </nav>
@@ -46,15 +33,14 @@
       <div class="side-label">CONVERSAS</div>
       <nav class="sidebar-nav" id="convList" aria-label="Conversas"></nav>
     </div>
-    <div class="sidebar-bottom"><span class="online-dot"></span><span id="aiRuntimeStatus" role="status">Verificando provedor de IA...</span><small>v2.4.0</small></div>
+    <div class="sidebar-bottom"><span class="online-dot"></span><span id="aiRuntimeStatus" role="status">Verificando provedor de IA...</span><small>v2.5.8</small></div>
   </aside>
-  <button class="overlay" id="overlay" aria-label="Fechar menu"></button>
+  <button class="overlay" id="overlay" aria-label="Fechar menu" aria-hidden="true" tabindex="-1"></button>
   <main class="main">
     <header class="topbar">
-      <div class="topbar-left"><button class="icon-btn menu-btn" id="btnMenu" aria-label="Abrir menu" aria-expanded="false">☰</button><div><div class="topbar-title" id="convTitle">Nova conversa</div><div class="topbar-subtitle" id="providerSubtitle">Seu espaço de inteligência</div></div></div>
+      <div class="topbar-left"><button class="icon-btn menu-btn" id="btnMenu" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">☰</button><div><div class="topbar-title" id="convTitle">Nova conversa</div><div class="topbar-subtitle" id="providerSubtitle">Seu espaço de inteligência</div></div></div>
       <div class="topbar-actions">
         <select id="modelSelect" aria-label="Selecionar modelo"><option value="">Modelo automático</option></select>
-        <button class="secondary-btn" id="btnChatTools" type="button" aria-expanded="false" aria-controls="chatTools">Ferramentas</button>
         <button class="secondary-btn" id="btnBackToChat" type="button" hidden>← Chat</button>
         <button class="icon-btn" id="btnTheme" aria-label="Alternar tema" title="Alternar tema">◐</button>
         <button class="icon-btn" id="btnClear" aria-label="Limpar tela" title="Limpar tela">⌫</button>
@@ -63,27 +49,63 @@
     </header>
     <section class="view view-chat" id="view-chat">
       <div class="chat-area" id="chatArea" role="log" aria-live="polite">
-        <div class="welcome" id="welcomePanel"><div class="welcome-orb" id="welcomeOrb">J</div><p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.4.0</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div></div>
+        <div class="welcome" id="welcomePanel"><div class="welcome-orb" id="welcomeOrb">J</div>        <p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.8</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div></div>
       </div>
-      <section class="chat-tools panel" id="chatTools" aria-label="Ferramentas do Chat" hidden>
-        <div class="row html-test-toolbar"><div><h3>Ferramentas do Chat</h3><p class="muted-copy">Abra recursos sem sair do espaço principal do Chat.</p></div><button class="icon-btn" id="btnCloseChatTools" type="button" aria-label="Fechar ferramentas">×</button></div>
-        <div class="card-grid chat-tool-grid">
-          <button type="button" data-chat-tool="gerador"><strong>✦ Gerador 2D/3D</strong><small>SVG, modelos 3D e HTML interativo</small></button>
-          <button type="button" data-chat-tool="voice-studio"><strong>♫ Voz e vídeo</strong><small>Narração e prévia de vídeo local</small></button>
-          <button type="button" data-chat-tool="html-tests"><strong>⌘ Testes HTML</strong><small>Verificações e diagnóstico do sistema</small></button>
-          <button type="button" data-chat-tool="reports"><strong>▤ Relatórios</strong><small>Resultados de erros e bugs</small></button>
-          <button type="button" data-chat-tool="agents"><strong>✧ Agentes</strong><small>Assistentes especializados</small></button>
-          <button type="button" data-chat-tool="tasks"><strong>◷ Tarefas</strong><small>Planejar e acompanhar etapas</small></button>
-          <button type="button" data-chat-tool="files"><strong>▤ Arquivos e código</strong><small>Importar, revisar e analisar</small></button>
-          <button type="button" data-chat-tool="memory"><strong>◈ Memória</strong><small>Notas e contexto persistente</small></button>
-          <button type="button" data-chat-tool="roblox-studio"><strong>◉ Roblox Studio</strong><small>Conexão local e envio de scripts com aprovação</small></button>
-          <button type="button" data-chat-tool="settings"><strong>⚙ Configurações</strong><small>Voz, visual, IA e preferências</small></button>
+      <section class="chat-image-tool panel" id="chatImageTool" aria-label="Gerar imagem para a conversa" hidden>
+        <h3>Imagem completa com IA local</h3>
+        <p class="muted-copy">Usa Automatic1111/Forge instalado e configurado no computador. Abra Atalhos → Gerador 2D/3D para configurar o motor local. Não chama serviços pagos; a imagem aparece nesta conversa e pode ser baixada como PNG.</p>
+        <button class="secondary-btn" data-sidebar-tool="gerador" type="button">Configurar IA de imagem local</button>
+        <label for="chatImagePrompt">Descreva a imagem</label>
+        <textarea id="chatImagePrompt" maxlength="1200" placeholder="Ex.: paisagem cyberpunk à noite, chuva neon, arte digital detalhada"></textarea>
+        <div class="row">
+          <label for="chatImageSize">Resolução
+            <select id="chatImageSize"><option value="512">512 × 512</option><option value="768" selected>768 × 768</option><option value="1024">1024 × 1024</option></select>
+          </label>
+          <button class="primary-btn" id="btnGenerateChatImage" type="button">Gerar imagem</button>
+          <span class="status" id="chatImageStatus" role="status" aria-live="polite"></span>
         </div>
+      </section>
+      <section class="chat-video-tool panel" id="chatVideoTool" aria-label="Gerar vídeo para a conversa" hidden>
+        <h3>Vídeo gerado por IA local</h3>
+        <p class="muted-copy">Usa o ComfyUI e o workflow/modelo já instalados e configurados. Nenhum modelo é baixado automaticamente. Se não estiver configurado, abra Voz e vídeo para configurar.</p>
+        <label for="chatVideoPrompt">Prompt do vídeo</label>
+        <textarea id="chatVideoPrompt" maxlength="2000" placeholder="Ex.: uma cidade futurista sob chuva, câmera avançando lentamente"></textarea>
+        <div class="row">
+          <button class="primary-btn" id="btnGenerateChatVideo" type="button">Gerar vídeo</button>
+          <button class="secondary-btn" data-sidebar-tool="voice-studio" type="button">Configurar ComfyUI</button>
+          <span class="status" id="chatVideoStatus" role="status" aria-live="polite"></span>
+        </div>
+        <video id="chatVideoPreview" controls playsinline hidden></video>
+        <a class="secondary-btn" id="chatVideoDownload" hidden download="jarves-video.mp4">Baixar vídeo</a>
       </section>
       <div class="suggestions" id="suggestions"></div>
       <div class="composer-wrap"><div class="composer">
         <textarea id="input" placeholder="Envie uma mensagem ao JARVES..." rows="1" aria-label="Mensagem"></textarea>
-        <div class="composer-tools"><span class="composer-hint">Enter envia · Shift + Enter quebra linha · Voz: diga “enviar”, “limpar texto”, “novo chat” ou “parar resposta”</span><div class="composer-actions"><button class="secondary-btn" id="btnVoice" type="button" aria-label="Ditado e comandos de voz: enviar pedido, limpar texto, novo chat ou parar resposta" aria-pressed="false" title="O reconhecimento usa o serviço de voz do navegador ou do Android; internet pode ser necessária.">◖ Voz</button><button class="danger-btn" id="btnStop" type="button" disabled>Parar</button><button class="send-btn" id="btnSend" type="button" aria-label="Enviar mensagem">↑</button></div></div>
+        <div class="composer-tools"><span class="composer-hint">Enter envia · Shift + Enter quebra linha · Voz: diga “enviar”, “limpar texto”, “novo chat” ou “parar resposta”</span><div class="composer-actions">
+          <details class="chat-resources" id="chat-resources"><summary class="secondary-btn" aria-label="Abrir comandos e atalhos">⌘ Atalhos</summary>
+            <div class="chat-resources-panel">
+              <details id="commandCatalogDetails">
+                <summary>Pesquisar comandos de IA</summary>
+                <label class="sr-only" for="commandCatalogSearch">Pesquisar comandos</label>
+                <input id="commandCatalogSearch" type="search" maxlength="80" placeholder="Pesquisar entre 900 comandos..." autocomplete="off">
+                <div class="command-catalog-results" id="commandCatalogResults" role="list"></div>
+                <span id="commandCatalogCount" role="status" aria-live="polite">12 de 900 comandos</span>
+              </details>
+              <nav class="chat-quick-actions" aria-label="Atalhos">
+                <button class="nav-btn" data-sidebar-action="images" type="button">▧ Gerar imagem PNG</button>
+                <button class="nav-btn" data-sidebar-tool="gerador" type="button">✦ Gerador 2D/3D</button>
+                <button class="nav-btn" data-sidebar-tool="voice-studio" type="button">♫ Voz e vídeo</button>
+                <button class="nav-btn" data-sidebar-tool="html-tests" type="button">⌘ Testes HTML</button>
+                <button class="nav-btn" data-sidebar-tool="reports" type="button">▤ Relatórios</button>
+                <button class="nav-btn" data-sidebar-tool="agents" type="button">✧ Agentes</button>
+                <button class="nav-btn" data-sidebar-tool="tasks" type="button">◷ Tarefas</button>
+                <button class="nav-btn" data-sidebar-tool="files" type="button">▤ Arquivos e código</button>
+                <button class="nav-btn" data-sidebar-tool="memory" type="button">◈ Memória</button>
+                <button class="nav-btn" data-sidebar-tool="roblox-studio" type="button">◉ Roblox Studio</button>
+              </nav>
+            </div>
+          </details>
+          <button class="secondary-btn sound-toggle" id="btnSound" type="button" aria-label="Desativar som de resposta" aria-pressed="true" title="Som curto quando a resposta terminar">🔊 Som</button><button class="secondary-btn" id="btnVoice" type="button" aria-label="Ditado e comandos de voz: enviar pedido, limpar texto, novo chat ou parar resposta" aria-pressed="false" title="O reconhecimento usa o serviço de voz do navegador ou do Android; internet pode ser necessária.">◖ Voz</button><button class="danger-btn" id="btnStop" type="button" disabled>Parar</button><button class="send-btn" id="btnSend" type="button" aria-label="Enviar mensagem">↑</button></div></div>
         <div class="status-bar voice-command-status" id="voiceCommandStatus" role="status" aria-live="polite"></div>
       </div><div class="status-bar" id="statusBar">A IA pode cometer erros. Verifique informações importantes.</div></div>
     </section>
@@ -105,6 +127,29 @@
         <video id="studioVideo" controls playsinline hidden></video>
         <div id="studioVideoStatus" class="status" aria-live="polite">Selecione um vídeo suportado pelo navegador para visualizar.</div>
       </div>
+      <div class="panel">
+        <h3>Configurar geração de vídeo com IA local</h3>
+        <p class="muted-copy">Conecte um ComfyUI instalado e iniciado na sua máquina/rede privada. Configure um workflow exportado em formato API, com um nó de texto e uma saída MP4 ou WebM. Instale você mesmo os modelos e nós necessários; o JARVES não baixa nem instala modelos. A geração usa o hardware local e pode levar bastante tempo.</p>
+        <label for="videoGeneratorUrl">Endereço HTTP local do ComfyUI</label>
+        <input id="videoGeneratorUrl" type="url" inputmode="url" maxlength="200" value="http://127.0.0.1:8188" placeholder="http://127.0.0.1:8188">
+        <label for="videoWorkflowFile">Importar workflow API JSON (máx. 1 MiB)</label>
+        <input id="videoWorkflowFile" type="file" accept=".json,application/json">
+        <label for="videoWorkflowJson">Workflow API JSON</label>
+        <textarea id="videoWorkflowJson" maxlength="1048576" rows="8" spellcheck="false" placeholder="Importe ou cole o JSON API exportado pelo ComfyUI."></textarea>
+        <div class="row">
+          <label for="videoPromptNodeId">ID do nó que recebe o prompt
+            <input id="videoPromptNodeId" maxlength="80" placeholder="Ex.: 6">
+          </label>
+          <label for="videoPromptInput">Campo do texto no nó
+            <input id="videoPromptInput" maxlength="80" value="text" placeholder="Ex.: text">
+          </label>
+        </div>
+        <div class="row">
+          <button class="primary-btn" id="btnSaveVideoSettings" type="button">Salvar configuração local</button>
+          <button class="secondary-btn" id="btnTestVideoGenerator" type="button">Testar ComfyUI</button>
+          <span id="videoGeneratorStatus" class="status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
     </section>
     <section class="view content-view" id="view-html-tests" hidden>
       <div class="page-heading"><p class="eyebrow">QUALIDADE DO SISTEMA</p><h1>Testes HTML e diagnóstico</h1><p>Verifique a interface, o navegador e a conexão; exporte um relatório para investigar falhas.</p></div>
@@ -124,7 +169,7 @@
     <section class="view content-view" id="view-agents" hidden><div class="page-heading"><p class="eyebrow">AUTOMAÇÃO INTELIGENTE</p><h1>Agentes especializados</h1><p>Escolha um agente e delegue uma tarefa.</p></div><div class="card-grid" id="agentsGrid"></div><div class="panel"><h3>Executar agente</h3><select id="agentSelect"></select><textarea id="agentTask" placeholder="Descreva a tarefa para o agente..."></textarea><button class="primary-btn" id="btnRunAgent">Executar agente</button><pre id="agentResult" class="result-box"></pre></div></section>
     <section class="view content-view" id="view-tasks" hidden><div class="page-heading"><p class="eyebrow">ORGANIZAÇÃO</p><h1>Planejamento de tarefas</h1><p>Transforme objetivos em etapas organizadas.</p></div><div class="panel"><textarea id="taskGoal" placeholder="Descreva seu objetivo..."></textarea><div class="row"><button class="primary-btn" id="btnPlan">Criar planejamento</button><button class="secondary-btn" id="btnRunTask">Criar e executar</button></div><pre id="planPreview" class="result-box"></pre></div><h3>Tarefas</h3><div id="taskList" class="list"></div></section>
     <section class="view content-view" id="view-files" hidden><div class="page-heading"><p class="eyebrow">ESPAÇO DE TRABALHO</p><h1>Arquivos e código</h1><p>Importe arquivos, baixe links públicos ou peça uma análise de código.</p></div><div class="panel"><h3>Baixar um arquivo da rede</h3><p class="muted-copy">Cole um link público HTTP/HTTPS para salvar PDF, imagem, áudio, vídeo, ZIP ou outro arquivo. O tamanho máximo segue o limite configurado para uploads. Endereços locais e privados são bloqueados.</p><label for="networkFileUrl">Link do arquivo</label><input id="networkFileUrl" type="url" inputmode="url" placeholder="https://exemplo.com/arquivo.pdf" autocomplete="url"><div class="row"><button class="primary-btn" id="btnDownloadNetworkFile" type="button">Baixar arquivo</button><span id="networkDownloadStatus" class="status" role="status" aria-live="polite"></span></div></div><div class="panel"><h3>Importar deste dispositivo</h3><input type="file" id="fileInput" multiple><button class="primary-btn" id="btnUpload">Importar arquivos</button><div id="uploadStatus" class="status"></div></div><div id="fileList" class="list"></div><div class="panel"><h3>Analisar código</h3><textarea id="codeInput" placeholder="Cole seu código aqui..."></textarea><button class="primary-btn" id="btnAnalyzeCode">Analisar código</button><pre id="codeAnalysis" class="result-box"></pre></div></section>
-    <section class="view content-view" id="view-memory" hidden><div class="page-heading"><p class="eyebrow">CONTEXTO PERSISTENTE</p><h1>Memória</h1><p>Organize informações úteis para suas conversas.</p></div><div class="panel"><input id="memSubject" placeholder="Assunto"><textarea id="memContent" placeholder="Conteúdo..."></textarea><select id="memKind"><option value="note">Nota</option><option value="preference">Preferência</option><option value="fact">Fato</option></select><button class="primary-btn" id="btnSaveMem">Salvar memória</button></div><input type="search" id="memSearch" placeholder="Pesquisar memória..."><div id="memList" class="list"></div></section>
+    <section class="view content-view" id="view-memory" hidden><div class="page-heading"><p class="eyebrow">CONTEXTO PERSISTENTE</p><h1>Memória</h1><p>Organize informações úteis para suas conversas.</p></div><div class="panel"><label class="memory-toggle"><input id="memoryEnabled" type="checkbox" checked><span>Usar memórias salvas</span></label><p class="muted-copy" id="memoryStatus" role="status" aria-live="polite">Carregando configuração...</p><input id="memSubject" placeholder="Assunto"><textarea id="memContent" placeholder="Conteúdo..."></textarea><select id="memKind"><option value="note">Nota</option><option value="preference">Preferência</option><option value="fact">Fato</option></select><button class="primary-btn" id="btnSaveMem">Salvar memória</button></div><input type="search" id="memSearch" placeholder="Pesquisar memória..."><div id="memList" class="list"></div></section>
     <section class="view content-view" id="view-roblox-studio" hidden>
       <div class="page-heading"><p class="eyebrow">INTEGRAÇÃO LOCAL</p><h1>Roblox Studio</h1><p>Envie código Luau do JARVES ao plugin local; o Studio sempre pede sua confirmação antes de inserir.</p></div>
       <div class="panel">
@@ -167,8 +212,16 @@
         <img id="aiAvatarPreview" alt="Prévia da imagem da IA">
         <div class="avatar-setting-controls"><label for="aiAvatarInput">Imagem/avatar da IA</label><input id="aiAvatarInput" type="file" accept="image/png,image/jpeg,image/webp"><p class="muted-copy">Imagem quadrada salva neste dispositivo e exibida no menu e no chat (máx. 5 MB).</p><button class="secondary-btn" id="btnResetAiAvatar" type="button">Usar inicial do nome</button></div>
       </div>
-      <div class="launcher-icon-setting"><label for="launcherIcon">Ícone do APK na tela inicial do Android</label><select id="launcherIcon"><option value="default">JARVES AI · azul</option><option value="robot">JARVES AI · turquesa</option></select><p class="muted-copy">No APK, escolha um dos ícones incluídos. Fora do APK esta opção não fica disponível.</p><div id="launcherIconStatus" class="status" aria-live="polite"></div></div>
+      <div class="launcher-icon-setting"><label for="launcherIcon">Ícone do APK na tela inicial do Android</label><select id="launcherIcon"><option value="default">JARVES AI · arte oficial</option><option value="robot">JARVES AI · arte turquesa</option></select><p class="muted-copy">No APK, escolha uma das versões da arte oficial. Fora do APK esta opção não fica disponível.</p><div id="launcherIconStatus" class="status" aria-live="polite"></div></div>
       <button class="primary-btn" id="btnSaveAppearance" type="button">Salvar aparência</button><div id="appearanceStatus" class="status" aria-live="polite"></div></div>
+      <div class="panel"><h3>Personalizar respostas da IA</h3><p class="muted-copy">Escolha como a IA responde e salve instruções próprias. Essas preferências ficam neste dispositivo e são enviadas junto com suas mensagens ao provedor selecionado.</p>
+        <label for="responseStyle">Estilo de resposta</label>
+        <select id="responseStyle"><option value="concise">Breve e direto</option><option value="balanced">Equilibrado</option><option value="detailed">Detalhado e estruturado</option><option value="code">Foco em programação</option></select>
+        <label for="customInstructions">Instruções personalizadas (até 1.200 caracteres)</label>
+        <textarea id="customInstructions" maxlength="1200" placeholder="Ex.: responda em português, explique termos técnicos e sinalize quando não tiver certeza."></textarea>
+        <div class="row"><button class="primary-btn" id="btnSaveAiBehavior" type="button">Salvar comportamento</button><span id="aiBehaviorStatus" class="status" role="status" aria-live="polite"></span></div>
+        <details class="command-help"><summary>Comandos rápidos no Chat</summary><p class="muted-copy"><code>/ajuda</code> · <code>/tema claro</code> · <code>/tema escuro</code> · <code>/cor #36d6c2</code> · <code>/voz pt-BR</code> · <code>/estilo detalhado</code> · <code>/nome Meu Assistente</code> · <code>/instrucoes texto</code> · <code>/som ligar</code> · <code>/modelo nome</code></p></details>
+      </div>
       <div class="panel" id="androidServerPanel">
         <h3>Servidor para este celular</h3>
         <p class="muted-copy">O botão IA local do APK executa um modelo no próprio celular, sem PC; o primeiro download ocupa 2,59 GB e o aparelho precisa de bastante memória. Esta tela web continua oferecendo conexão opcional ao servidor JARVES/Ollama em outro computador para as ferramentas completas.</p>
@@ -215,7 +268,7 @@
     </section>
   </main>
 </div>
-<script src="/scripts/api.js"></script><script src="/scripts/state.js"></script><script src="/scripts/ui.js"></script><script src="/scripts/particles.js"></script><script src="/scripts/app.js"></script><script src="/scripts/base-engine.js"></script><script src="/scripts/gerador.js"></script><script src="/scripts/html-tests.js"></script><script src="/scripts/roblox-studio.js"></script>
+<script src="/scripts/api.js"></script><script src="/scripts/state.js"></script><script src="/scripts/ui.js"></script><script src="/scripts/particles.js"></script><script src="/scripts/commands.js"></script><script src="/scripts/media-intents.js"></script><script src="/scripts/generated-html.js"></script><script src="/scripts/app.js"></script><script src="/scripts/base-engine.js"></script><script src="/scripts/gerador.js"></script><script src="/scripts/html-tests.js"></script><script src="/scripts/roblox-studio.js"></script>
 <script>
 document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('input');i.value=b.dataset.prompt;i.focus();}));
 </script>

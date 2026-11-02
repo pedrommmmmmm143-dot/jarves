@@ -9,8 +9,8 @@ android {
         applicationId 'com.jarves.ai'
         minSdk 24
         targetSdk 35
-        versionCode 240
-        versionName '2.4.0'
+        versionCode 258
+        versionName '2.5.8'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

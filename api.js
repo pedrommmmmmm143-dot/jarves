@@ -33,6 +33,7 @@ const api = {
   health: () => request('/api/health'),
   listConversations: (search) => request('/api/conversations' + (search ? '?search=' + encodeURIComponent(search) : '')),
   createConversation: (payload) => request('/api/conversations', { method: 'POST', body: payload || {} }),
+  addConversationMessage: (id, payload) => request('/api/conversations/' + idPath(id) + '/messages', { method: 'POST', body: payload }),
   unifyConversations: () => request('/api/conversations/unify', { method: 'POST', body: {} }),
   getConversation: (id) => request('/api/conversations/' + idPath(id)),
   updateConversation: (id, payload) => request('/api/conversations/' + idPath(id), { method: 'PATCH', body: payload }),
@@ -46,6 +47,7 @@ const api = {
   setSetting: (key, value) => request('/api/settings/' + encodeURIComponent(key), { method: 'PUT', body: { value } }),
   deleteSetting: (key) => request('/api/settings/' + encodeURIComponent(key), { method: 'DELETE' }),
   listMemory: (q) => request('/api/memory?limit=200' + (q ? '&q=' + encodeURIComponent(q) : '')),
+  memoryStatus: () => request('/api/memory/status'),
   searchMemory: (q) => request('/api/memory/search?q=' + encodeURIComponent(q)),
   createMemory: (payload) => request('/api/memory', { method: 'POST', body: payload }),
   updateMemory: (id, payload) => request('/api/memory/' + idPath(id), { method: 'PATCH', body: payload }),
@@ -56,7 +58,7 @@ const api = {
   fileDownloadUrl: (id) => '/api/files/' + idPath(id) + '/download',
   deleteFile: (id) => request('/api/files/' + idPath(id), { method: 'DELETE' }),
   fileContent: (id) => request('/api/files/' + idPath(id) + '/content'),
-  analyzeCode: (code) => request('/api/files/analyze', { method: 'POST', body: { code } }),
+  analyzeCode: (code, language = 'auto') => request('/api/files/analyze', { method: 'POST', body: { code, language } }),
   listAgents: () => request('/api/tasks/agents'),
   plan: (goal, context = {}) => request('/api/tasks/plan', { method: 'POST', body: { goal, ...context } }),
   createTask: (payload) => request('/api/tasks', { method: 'POST', body: payload }),
@@ -69,6 +71,29 @@ const api = {
   lastDiagnostics: () => request('/api/diagnostics/last'),
   imageGeneratorStatus: () => request('/api/images/status'),
   generateImage: (payload) => request('/api/images/generate', { method: 'POST', body: payload }),
+  videoGeneratorStatus: () => request('/api/videos/status'),
+  generateVideo: async (prompt) => {
+    let response;
+    try {
+      response = await fetch('/api/videos/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+    } catch (error) {
+      throw new Error(window.jarvesNetworkHint ? window.jarvesNetworkHint(error) : `Falha de rede: ${error.message}`);
+    }
+    if (!response.ok) {
+      let message = `Erro HTTP ${response.status}`;
+      try { message = (await response.json()).error || message; } catch {}
+      throw new Error(message);
+    }
+    const blob = await response.blob();
+    if (!blob.size || !['video/mp4', 'video/quicktime', 'video/webm'].includes(blob.type)) {
+      throw new Error('O gerador não retornou um arquivo de vídeo compatível.');
+    }
+    return { blob, type: blob.type };
+  },
   robloxPair: () => request('/api/roblox/pair', { method: 'POST', body: {} }),
   robloxStatus: (token) => request('/api/roblox/status', { headers: { 'X-Jarves-Bridge-Token': token } }),
   robloxQueue: (token, payload) => request('/api/roblox/queue', { method: 'POST', headers: { 'X-Jarves-Bridge-Token': token }, body: payload }),

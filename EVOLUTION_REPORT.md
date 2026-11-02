@@ -1,4 +1,28 @@
-# JARVES EVOLUTION MAX — Relatório técnico v2.5.2
+# JARVES EVOLUTION MAX — Relatório técnico v2.5.8
+
+## Preparação v2.5.8
+
+- Adicionado seletor de contexto para Ollama: 4096, 8192, 16384 ou 32768 tokens. O padrão de 16384 mantém o comportamento anterior.
+- A escolha validada chega como `num_ctx` em chamadas locais no backend Node e no Executor HTML offline; provedores remotos não recebem esse parâmetro. Modelos e hardware podem suportar limites diferentes.
+- Corrigidas instruções e exemplos que sugeriam modelos diferentes do padrão `qwen2.5:3b`; modelos já salvos permanecem intactos.
+- Atualizados versão do app, backend, PWA, Android e User-Agent para 2.5.8 / versionCode 258.
+- `npm test`: aprovado, 138/138; `npm run check`: aprovado, 63/63 arquivos JavaScript.
+- Builds verificados: AppImage Linux x64 (124 MB) e instalador Windows x64 (120 MB), sem assinatura de código.
+- APK local não compilado: Java/JDK, Gradle e Android SDK não estão disponíveis; o workflow Android do GitHub pode compilá-lo após publicação.
+- Publicação GitHub e deploy BAXAI: pendentes; esta cópia continua sem metadados Git.
+
+## Preparação v2.5.6
+
+- Pedidos explícitos de geração de imagem no chat acionam a integração local Automatic1111/Forge. Erros de conexão/configuração são exibidos ao usuário; o fluxo não substitui imagens ausentes por ilustrações fictícias.
+- Pedidos explícitos de vídeo podem usar ComfyUI local com workflow API importado e configurado; endpoint só aceita HTTP local/privado, workflow é limitado a 1 MiB, a saída é validada como MP4/WebM até 128 MiB e nenhum modelo é baixado automaticamente.
+- Ferramentas e os 900 comandos foram movidos da barra lateral para o menu **Atalhos** no compositor do chat, mantendo as telas e ações disponíveis.
+- O gerador de HTML agora normaliza blocos de código, verifica estrutura, fechamento de tags, recursos remotos e sintaxe JavaScript sem executar os scripts; HTML inválido gera uma tentativa de correção e, se persistir, um erro explícito.
+- Adicionado controle **Testar HTML gerado**, testes unitários de regressão e casos ao conjunto de diagnóstico HTML.
+- Atualizados versão do app, backend, PWA e Android para 2.5.6 / versionCode 256.
+- Validação local: `npm test` 135/135; `npm run check` 63/63; diagnóstico HTML no navegador 32/32; integração de vídeo testada com um servidor ComfyUI simulado.
+- Builds verificados: AppImage Linux x64 (124 MB) e instalador Windows x64 (120 MB), ambos sem assinatura de código.
+- Limitações: APK não compilado (JDK, Gradle e Android SDK ausentes); geração real de vídeo não executada porque o ComfyUI/modelo não está instalado neste ambiente.
+- Publicação pendente: esta cópia não tem metadados Git e o executável Git não está disponível. O código, a Release, o APK e o site BAXAI não foram enviados; a versão remota permanece 2.5.2.
 
 ## Atualização v2.5.2 (publicada)
 
