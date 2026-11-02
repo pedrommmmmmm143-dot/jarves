@@ -1,4 +1,4 @@
-# JARVES AI 2.4.2 — IA local Android + Roblox Studio
+# JARVES AI 2.5.2 — IA local Android + Roblox Studio
 
 Repositorio-fonte preparado a partir do pacote Windows enviado.
 
@@ -10,7 +10,7 @@ Repositorio-fonte preparado a partir do pacote Windows enviado.
 - GitHub Actions compilam APK, EXE e AppImage como artefatos. Ao enviar uma tag `v*`, os três arquivos são anexados à Release correspondente no GitHub.
 - **Arquivos e código** importa arquivos locais e baixa arquivos de links HTTP/HTTPS públicos; os bytes são preservados e os downloads respeitam o limite configurado para uploads.
 - A integração Roblox Studio usa um plugin local e uma fila autenticada em loopback. Cada script exige aprovação dentro do Studio antes de ser inserido; o JARVES não executa código Luau.
-- Ferramentas ficam no painel **Atalhos** do Chat; a geração de PNG usa um modelo Automatic1111/Forge local configurado pelo usuário. Um som curto opcional avisa quando a resposta termina.
+- Ferramentas e comandos ficam organizados no menu lateral esquerdo. A geração de PNG usa um modelo Automatic1111/Forge local configurado pelo usuário; um som curto opcional avisa quando a resposta termina.
 - Roblox Studio é oficialmente disponível para Windows e macOS. No Linux, executar via Wine é uma alternativa não oficial, sem garantia de compatibilidade.
 
 ## Executar o servidor
@@ -45,6 +45,8 @@ O modo **Servidor** continua opcional e conecta a interface web do JARVES/Ollama
 A descoberta usa mDNS (`_jarves._tcp`) e só é anunciada quando o backend escuta em todas as interfaces ou num endereço local privado. O APK não liga o Wi-Fi nem ingressa numa rede protegida; ambos os aparelhos precisam estar na mesma rede local e a rede deve permitir tráfego entre dispositivos. A versão desktop instalada mantém o backend limitado a `127.0.0.1`; para conectar o APK, inicie o servidor Node em modo LAN conforme o passo 1.
 
 ## JARVIS Evolution / Brain / Coder — melhorias desta preparação
+- O menu lateral esquerdo reúne as ferramentas e oferece exatamente 900 comandos pesquisáveis em 30 áreas e 30 ações. Escolher um comando preenche a mensagem para revisão; o JARVES só envia após confirmação da pessoa.
+- A memória configurável pode ser desativada sem apagar registros existentes. Com ela ativada, até três memórias relevantes podem compor o contexto apenas em provedores locais; elas não são enviadas a provedores OpenAI-compatíveis.
 - O perfil da IA pode ser escolhido no próprio Chat: Geral, Programador, Pesquisador, Professor, Planejador, Analista ou Criador. A seleção fica salva localmente no navegador.
 - O backend valida o perfil e limita instruções personalizadas antes de montar o contexto do modelo. O endpoint `GET /api/profiles` lista os perfis suportados.
 - O endpoint `GET /api/models/health` verifica se o Ollama responde, lista modelos disponíveis e informa se o modelo selecionado está instalado. A verificação não baixa modelos.
@@ -73,7 +75,7 @@ A página local de downloads está em `/download.html` quando o servidor JARVES 
 - O instalador ainda não tem assinatura de código; o Windows pode mostrar avisos do SmartScreen.
 
 ## Gerar AppImage para Linux
-- Requer Node.js 22.13+; execute `npm ci` e `npm run build:linux` para criar `dist/JARVES-AI-2.4.2-x86_64.AppImage`.
+- Requer Node.js 22.13+; execute `npm ci` e `npm run build:linux` para criar `dist/JARVES-AI-2.5.2-x86_64.AppImage`.
 - O workflow **Build JARVES Linux AppImage** gera o mesmo pacote x86_64, publica-o como artefato do Actions e o anexa à Release nas tags `v*`.
 - Os pacotes Electron incluem o diretório `executor/`, usado pelo provedor de IA, e usam ícones de aplicativo específicos para Linux e Windows. O APK inclui ícones de launcher em todas as densidades Android.
 
