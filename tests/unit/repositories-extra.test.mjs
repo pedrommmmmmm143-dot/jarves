@@ -35,8 +35,11 @@ test('PATCH aceita agentId (camelCase) e agent_id', async () => {
 test('memoria: kind nulo vira note, conteudo vazio e rejeitado, busca com caracteres especiais nao quebra', async () => {
   const M = await import('../../database/repositories/memoryRepository.mjs');
   assert.equal(M.createMemory({ kind: null, content: 'gosto de cafe' }).kind, 'note');
+  M.createMemory({ content: 'segredo desativado', enabled: false });
   assert.throws(() => M.createMemory({ content: '   ' }), /vazio/);
   assert.equal(M.searchMemories('cafe').length, 1);
+  assert.equal(M.searchMemories('segredo desativado').length, 0);
+  assert.equal(M.findRelevantMemories('qual estilo para cafe?').length, 1);
   assert.doesNotThrow(() => M.searchMemories('"cafe -(:'));
   assert.equal(M.searchMemories('100%').length, 0);
 });
