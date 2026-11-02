@@ -46,6 +46,7 @@ const api = {
   setSetting: (key, value) => request('/api/settings/' + encodeURIComponent(key), { method: 'PUT', body: { value } }),
   deleteSetting: (key) => request('/api/settings/' + encodeURIComponent(key), { method: 'DELETE' }),
   listMemory: (q) => request('/api/memory?limit=200' + (q ? '&q=' + encodeURIComponent(q) : '')),
+  memoryStatus: () => request('/api/memory/status'),
   searchMemory: (q) => request('/api/memory/search?q=' + encodeURIComponent(q)),
   createMemory: (payload) => request('/api/memory', { method: 'POST', body: payload }),
   updateMemory: (id, payload) => request('/api/memory/' + idPath(id), { method: 'PATCH', body: payload }),
