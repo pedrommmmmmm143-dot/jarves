@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (v === 'tasks') loadTasks();
     if (v === 'settings') { loadSettings(); loadReports(); }
     if (v === 'settings') loadAndroidServerSettings();
+    if (v === 'voice-studio') loadVideoGenerationSettings();
     if (v === 'html-tests') loadDiagnostics();
     if (v === 'diagnostics') loadDiagnostics();
     if (v === 'reports') loadReports();
@@ -179,23 +180,24 @@ document.addEventListener('DOMContentLoaded', () => {
       setView('chat');
       document.getElementById('input').value = button.dataset.command;
       document.getElementById('input').focus();
-      closeSidebar();
+      document.getElementById('commandCatalogDetails')?.removeAttribute('open');
+      document.querySelector('.chat-resources')?.removeAttribute('open');
       toast('Comando inserido no chat. Revise e envie quando quiser.');
     });
   }
-  document.getElementById('sidebarToolNav').addEventListener('click', event => {
+  document.addEventListener('click', event => {
     if (event.target.closest('[data-sidebar-action="images"]')) {
       setView('chat');
       const imageTool = document.getElementById('chatImageTool');
       imageTool.hidden = !imageTool.hidden;
       document.getElementById('chatImageStatus').textContent = '';
-      closeSidebar();
+      document.querySelector('.chat-resources')?.removeAttribute('open');
       return;
     }
     const button = event.target.closest('[data-sidebar-tool]');
     if (!button) return;
     setView(button.dataset.sidebarTool);
-    closeSidebar();
+    document.querySelector('.chat-resources')?.removeAttribute('open');
   });
   // default chat view
   setView('chat');
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.messages.length) {
       const welcome = document.createElement('div');
       welcome.className = 'welcome';
-      welcome.innerHTML = '<div class="welcome-orb" aria-hidden="true">J</div><p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div>';
+      welcome.innerHTML = '<div class="welcome-orb" aria-hidden="true">J</div><p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.8</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div>';
       area.appendChild(welcome);
       applyPreferences();
       welcome.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
@@ -329,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Send message
   function showChatCommandHelp() {
-    toast('/ajuda · 900 comandos: abra Ferramentas e atalhos no menu lateral · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
+    toast('/ajuda · 900 comandos e recursos: abra Atalhos no campo da conversa · /tema escuro|claro · /cor #hex · /voz pt-BR|pt-PT|en-US|es-ES · /estilo breve|equilibrado|detalhado|codigo · /nome texto · /instrucoes texto · /som ligar|desligar · /modelo nome', 'info');
   }
   function handleChatCommand(text) {
     if (!text.startsWith('/')) return false;
@@ -416,16 +418,218 @@ document.addEventListener('DOMContentLoaded', () => {
     const instructions = preferences.customInstructions.trim();
     return [styles[preferences.responseStyle], instructions].filter(Boolean).join('\n\n').slice(0, 1600);
   }
+  let mediaGenerating = false;
+  let imageRequestPending = false;
+  let videoRequestPending = false;
+  const generatedVideoUrls = new Set();
+  async function ensureConversationForMessage(text) {
+    if (state.currentConversationId) return;
+    const conversation = await api.createConversation({ title: text.slice(0, 60) });
+    state.currentConversationId = conversation.id;
+    document.getElementById('convTitle').textContent = conversation.title;
+    await loadConversations();
+  }
+  async function generateChatImage(prompt, size, status, button, includeRequestInChat = false, historyWarning = '') {
+    if (mediaGenerating) {
+      status.textContent = 'Outra geração local está em andamento. Tente novamente quando ela terminar.';
+      return;
+    }
+    mediaGenerating = true;
+    button.disabled = true;
+    status.textContent = 'Gerando PNG no modelo local; isso pode levar alguns minutos...';
+    try {
+      const result = await api.generateImage({ prompt, width: size, height: size, steps: 20 });
+      if (typeof result?.image !== 'string' || !result.image) throw new Error('O gerador não retornou uma imagem válida.');
+      const figure = document.createElement('figure');
+      figure.className = 'msg assistant generated-image-message';
+      const image = document.createElement('img');
+      image.src = `data:image/png;base64,${result.image}`;
+      image.alt = `Imagem gerada: ${prompt}`;
+      image.loading = 'lazy';
+      const caption = document.createElement('figcaption');
+      caption.textContent = `Imagem gerada com ${result.model || 'Automatic1111/Forge local'} · ${size} × ${size} · ${prompt}`;
+      const save = document.createElement('a');
+      save.className = 'secondary-btn';
+      save.href = image.src;
+      save.download = 'jarves-imagem-gerada.png';
+      save.textContent = 'Baixar PNG';
+      figure.append(image, caption, save);
+      document.getElementById('chatArea').appendChild(figure);
+      document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+      if (includeRequestInChat) {
+        const content = `Imagem PNG gerada no modelo local (${result.model || 'Automatic1111/Forge'}). Prompt: ${prompt}. Baixe o PNG para mantê-lo.`;
+        state.messages.push({ role: 'assistant', content });
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'assistant', content, model: result.model || null, provider: 'local-image' });
+        } catch (error) {
+          historyWarning = ` Não foi possível salvar a resposta no histórico: ${error.message}`;
+        }
+      }
+      status.textContent = 'Imagem pronta e adicionada à conversa. Baixe o PNG para mantê-lo.' + historyWarning;
+    } catch (error) {
+      status.textContent = `Falha ao gerar imagem: ${error.message}` + historyWarning;
+      if (includeRequestInChat) {
+        const content = `Não consegui gerar a imagem. Verifique a configuração do Automatic1111/Forge em Atalhos → Gerador 2D/3D. Detalhes: ${error.message}`;
+        state.messages.push({ role: 'assistant', content });
+        appendMessageBubble('assistant', content);
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'assistant', content, provider: 'local-image', error: error.message });
+        } catch (saveError) {
+          status.textContent += ` Não foi possível salvar a falha no histórico: ${saveError.message}`;
+        }
+      }
+    } finally {
+      mediaGenerating = false;
+      button.disabled = false;
+    }
+  }
+  async function generateChatVideo(prompt, includeRequestInChat = false) {
+    const status = document.getElementById('chatVideoStatus');
+    if (mediaGenerating) {
+      status.textContent = 'Outra geração local está em andamento. Tente novamente quando ela terminar.';
+      return;
+    }
+    const button = document.getElementById('btnGenerateChatVideo');
+    const preview = document.getElementById('chatVideoPreview');
+    const download = document.getElementById('chatVideoDownload');
+    if (!prompt.trim() || prompt.length > 2000) {
+      status.textContent = 'Descreva o vídeo em até 2.000 caracteres.';
+      return;
+    }
+    mediaGenerating = true;
+    button.disabled = true;
+    preview.pause();
+    if (preview.dataset.generatedUrl) {
+      URL.revokeObjectURL(preview.dataset.generatedUrl);
+      generatedVideoUrls.delete(preview.dataset.generatedUrl);
+      delete preview.dataset.generatedUrl;
+    }
+    preview.removeAttribute('src');
+    preview.hidden = true;
+    preview.load();
+    download.removeAttribute('href');
+    download.hidden = true;
+    status.textContent = 'Enviando o workflow ao ComfyUI local. A geração pode levar vários minutos...';
+    try {
+      const result = await api.generateVideo(prompt);
+      if (preview.dataset.generatedUrl) {
+        URL.revokeObjectURL(preview.dataset.generatedUrl);
+        generatedVideoUrls.delete(preview.dataset.generatedUrl);
+      }
+      const objectUrl = URL.createObjectURL(result.blob);
+      generatedVideoUrls.add(objectUrl);
+      preview.dataset.generatedUrl = objectUrl;
+      preview.src = objectUrl;
+      preview.hidden = false;
+      preview.load();
+      download.href = objectUrl;
+      download.download = result.type === 'video/webm' ? 'jarves-video.webm' : 'jarves-video.mp4';
+      download.hidden = false;
+      const content = `Vídeo gerado com o ComfyUI local. Prompt: ${prompt}. Baixe o arquivo para mantê-lo.`;
+      let historyWarning = '';
+      if (includeRequestInChat) {
+        state.messages.push({ role: 'assistant', content });
+        appendMessageBubble('assistant', content);
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'assistant', content, provider: 'local-video' });
+        } catch (error) {
+          historyWarning = ` Não foi possível salvar a resposta no histórico: ${error.message}`;
+        }
+      }
+      status.textContent = 'Vídeo pronto. Confira a prévia e baixe o arquivo para mantê-lo.' + historyWarning;
+      document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+    } catch (error) {
+      status.textContent = `Falha ao gerar vídeo: ${error.message}. Confira o ComfyUI, o workflow e o modelo local.`;
+      if (includeRequestInChat) {
+        const content = `Não consegui gerar o vídeo. Configure o ComfyUI e o workflow API em Atalhos → Voz e vídeo. Detalhes: ${error.message}`;
+        state.messages.push({ role: 'assistant', content });
+        appendMessageBubble('assistant', content);
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'assistant', content, provider: 'local-video', error: error.message });
+        } catch (saveError) {
+          status.textContent += ` Não foi possível salvar a falha no histórico: ${saveError.message}`;
+        }
+      }
+    } finally {
+      mediaGenerating = false;
+      button.disabled = false;
+    }
+  }
   async function sendMessage() {
     const input = document.getElementById('input');
     let text = input.value.trim();
     if (!text) return;
-    if (state.generating) return;
+    if (state.generating || mediaGenerating || imageRequestPending || videoRequestPending) return;
     const catalogCommand = window.jarvesCommandCatalog?.get(text);
     if (catalogCommand) text = catalogCommand.prompt;
     else if (handleChatCommand(text)) {
       input.value = '';
       saveDraft('');
+      return;
+    }
+    const imagePrompt = window.jarvesMediaIntents?.getImagePrompt(text);
+    const videoPrompt = window.jarvesMediaIntents?.getVideoPrompt(text);
+    if (imagePrompt && videoPrompt) return;
+    if (videoPrompt) {
+      videoRequestPending = true;
+      try {
+        await ensureConversationForMessage(text);
+        input.value = '';
+        saveDraft('');
+        prepareResponseSound();
+        document.querySelectorAll('#chatArea .welcome').forEach(el => el.remove());
+        const suggestions = document.getElementById('suggestions');
+        if (suggestions) suggestions.hidden = true;
+        state.messages.push({ role: 'user', content: text });
+        appendMessageBubble('user', text);
+        let historyWarning = '';
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'user', content: text });
+        } catch (error) {
+          historyWarning = ` Não foi possível salvar o pedido no histórico: ${error.message}`;
+        }
+        document.getElementById('chatVideoTool').hidden = false;
+        document.getElementById('chatVideoPrompt').value = videoPrompt;
+        await generateChatVideo(videoPrompt, true);
+        if (historyWarning) document.getElementById('chatVideoStatus').textContent += historyWarning;
+      } catch (error) {
+        toast(`Não foi possível iniciar a geração do vídeo: ${error.message}`, 'error');
+        input.value = text;
+        saveDraft(text);
+      } finally {
+        videoRequestPending = false;
+      }
+      return;
+    }
+    if (imagePrompt) {
+      imageRequestPending = true;
+      try {
+        await ensureConversationForMessage(text);
+        input.value = '';
+        saveDraft('');
+        prepareResponseSound();
+        document.querySelectorAll('#chatArea .welcome').forEach(el => el.remove());
+        const suggestions = document.getElementById('suggestions');
+        if (suggestions) suggestions.hidden = true;
+        state.messages.push({ role: 'user', content: text });
+        appendMessageBubble('user', text);
+        let historyWarning = '';
+        try {
+          await api.addConversationMessage(state.currentConversationId, { role: 'user', content: text });
+        } catch (error) {
+          historyWarning = ` Não foi possível salvar o pedido no histórico: ${error.message}`;
+        }
+        document.getElementById('chatImageTool').hidden = false;
+        document.getElementById('chatImagePrompt').value = imagePrompt;
+        const size = Number(document.getElementById('chatImageSize').value);
+        await generateChatImage(imagePrompt, size, document.getElementById('chatImageStatus'), chatImageButton, true, historyWarning);
+      } catch (error) {
+        document.getElementById('chatImageStatus').textContent = `Não foi possível iniciar a geração: ${error.message}`;
+        input.value = text;
+        saveDraft(text);
+      } finally {
+        imageRequestPending = false;
+      }
       return;
     }
     prepareResponseSound();
@@ -610,33 +814,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const size = Number(document.getElementById('chatImageSize').value);
-    chatImageButton.disabled = true;
-    status.textContent = 'Gerando PNG no modelo local; isso pode levar alguns minutos...';
-    try {
-      const result = await api.generateImage({ prompt, width: size, height: size, steps: 20 });
-      if (typeof result?.image !== 'string' || !result.image) throw new Error('O gerador não retornou uma imagem válida.');
-      const figure = document.createElement('figure');
-      figure.className = 'msg assistant generated-image-message';
-      const image = document.createElement('img');
-      image.src = `data:image/png;base64,${result.image}`;
-      image.alt = `Imagem gerada: ${prompt}`;
-      image.loading = 'lazy';
-      const caption = document.createElement('figcaption');
-      caption.textContent = `Imagem gerada com ${result.model || 'Automatic1111/Forge local'} · ${size} × ${size}`;
-      const save = document.createElement('a');
-      save.className = 'secondary-btn';
-      save.href = image.src;
-      save.download = 'jarves-imagem-gerada.png';
-      save.textContent = 'Baixar PNG';
-      figure.append(image, caption, save);
-      document.getElementById('chatArea').appendChild(figure);
-      document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
-      status.textContent = 'Imagem pronta e adicionada à conversa. Baixe o PNG para mantê-lo.';
-    } catch (error) {
-      status.textContent = `Falha ao gerar imagem: ${error.message}`;
-    } finally {
-      chatImageButton.disabled = false;
-    }
+    await generateChatImage(prompt, size, status, chatImageButton);
+  });
+  document.getElementById('btnGenerateChatVideo').addEventListener('click', async () => {
+    const prompt = document.getElementById('chatVideoPrompt').value.trim();
+    await generateChatVideo(prompt, Boolean(state.currentConversationId));
   });
 
   document.getElementById('btnStop').addEventListener('click', async () => {
@@ -1141,6 +1323,69 @@ document.addEventListener('DOMContentLoaded', () => {
     studioVideo.pause();
     document.getElementById('studioVoiceStatus').textContent = 'Reprodução interrompida.';
   });
+  async function loadVideoGenerationSettings() {
+    const status = document.getElementById('videoGeneratorStatus');
+    try {
+      const result = await api.getSettings();
+      const settings = result.settings || {};
+      document.getElementById('videoGeneratorUrl').value = settings.video_gen_url || result.defaults?.video_gen_url || 'http://127.0.0.1:8188';
+      document.getElementById('videoWorkflowJson').value = settings.video_gen_workflow || '';
+      document.getElementById('videoPromptNodeId').value = settings.video_gen_prompt_node_id || '';
+      document.getElementById('videoPromptInput').value = settings.video_gen_prompt_input || 'text';
+      status.textContent = '';
+    } catch (error) {
+      status.textContent = `Não foi possível carregar a configuração: ${error.message}`;
+    }
+  }
+  document.getElementById('videoWorkflowFile').addEventListener('change', async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      document.getElementById('videoGeneratorStatus').textContent = 'Workflow excede o limite de 1 MiB.';
+      event.target.value = '';
+      return;
+    }
+    try {
+      const contents = await file.text();
+      JSON.parse(contents);
+      document.getElementById('videoWorkflowJson').value = contents;
+      document.getElementById('videoGeneratorStatus').textContent = 'JSON carregado. Informe também o nó e o campo do prompt.';
+    } catch (error) {
+      document.getElementById('videoGeneratorStatus').textContent = `Workflow inválido: ${error.message}`;
+      event.target.value = '';
+    }
+  });
+  document.getElementById('btnSaveVideoSettings').addEventListener('click', async () => {
+    const status = document.getElementById('videoGeneratorStatus');
+    const settings = [
+      ['video_gen_url', document.getElementById('videoGeneratorUrl').value.trim()],
+      ['video_gen_workflow', document.getElementById('videoWorkflowJson').value],
+      ['video_gen_prompt_node_id', document.getElementById('videoPromptNodeId').value.trim()],
+      ['video_gen_prompt_input', document.getElementById('videoPromptInput').value.trim() || 'text'],
+    ];
+    try {
+      for (const [key, value] of settings) await api.setSetting(key, value);
+      status.textContent = 'Configuração salva apenas neste servidor. Os modelos e workflows não foram baixados.';
+    } catch (error) {
+      status.textContent = `Falha ao salvar configuração: ${error.message}. Confira os campos; valores anteriores podem ter sido salvos.`;
+    }
+  });
+  document.getElementById('btnTestVideoGenerator').addEventListener('click', async () => {
+    const button = document.getElementById('btnTestVideoGenerator');
+    const status = document.getElementById('videoGeneratorStatus');
+    button.disabled = true;
+    status.textContent = 'Testando conexão local...';
+    try {
+      const result = await api.videoGeneratorStatus();
+      status.textContent = result.workflowConfigured
+        ? `ComfyUI conectado. Workflow e nó de prompt configurados · ${result.devices} dispositivo(s) informado(s).`
+        : `ComfyUI conectado, mas a geração não está pronta: ${result.configurationError}`;
+    } catch (error) {
+      status.textContent = `ComfyUI indisponível: ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  });
   document.getElementById('btnExportNarration').addEventListener('click', () => {
     const text = studioNarration.value.trim();
     if (!text) {
@@ -1181,6 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('beforeunload', () => {
     window.speechSynthesis?.cancel();
     if (studioVideoUrl) URL.revokeObjectURL(studioVideoUrl);
+    for (const url of generatedVideoUrls) URL.revokeObjectURL(url);
   });
   // Models
   async function loadModels() {
@@ -1457,11 +1703,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const fields = [
         { key: 'ai_provider', label: 'Provedor ativo', type: 'select', options: ['auto','ollama','openai-compatible','base','mock'] },
         { key: 'ollama_base_url', label: 'Endereço do Ollama', type: 'url', placeholder: 'http://127.0.0.1:11434' },
-        { key: 'ollama_model', label: 'Modelo Ollama', type: 'text', placeholder: 'qwen3.5:4b' },
+        { key: 'ollama_model', label: 'Modelo Ollama', type: 'text', placeholder: 'qwen2.5:3b' },
         { key: 'openai_base_url', label: 'Endpoint compatível', type: 'url', placeholder: 'https://api.exemplo.com/v1' },
         { key: 'openai_model', label: 'Modelo remoto', type: 'text', placeholder: 'nome-do-modelo' },
         { key: 'ai_timeout_ms', label: 'Tempo limite (ms)', type: 'number' },
         { key: 'ai_quality', label: 'Qualidade de resposta', type: 'select', options: ['low','medium','high'] },
+        { key: 'ai_context_tokens', label: 'Contexto Ollama (tokens)', type: 'select', options: ['4096','8192','16384','32768'] },
         { key: 'research_enabled', label: 'Pesquisa web (consulta pública ao DuckDuckGo)', type: 'select', options: ['false','true'] },
       ];
       for (const f of fields) {
@@ -1475,6 +1722,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ? providerLabels
             : f.key === 'research_enabled'
               ? { false: 'Desativada (mais privacidade)', true: 'Ativada (requer internet)' }
+              : f.key === 'ai_context_tokens'
+                ? { 4096: '4096 · menor uso de memória', 8192: '8192 · equilibrado', 16384: '16384 · contexto padrão', 32768: '32768 · maior uso de memória' }
               : null;
           for (const o of f.options) { const opt = document.createElement('option'); opt.value = o; opt.textContent = optionLabels?.[o] || o; input.appendChild(opt); }
         } else {
@@ -1483,7 +1732,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         input.dataset.key = f.key;
         const dflt = (r.defaults || {})[f.key];
-        const fallback = { ai_quality: 'medium' }[f.key];
+        const fallback = { ai_quality: 'medium', ai_context_tokens: String(r.defaults?.ai_context_tokens || 16384) }[f.key];
         input.value = settings[f.key] !== undefined ? settings[f.key] : (dflt !== undefined ? dflt : (fallback !== undefined ? fallback : ''));
         label.appendChild(input); form.appendChild(label);
       }

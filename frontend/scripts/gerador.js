@@ -14,6 +14,7 @@
     '<button class="primary-btn" id="genGo" type="button">✦ Gerar</button></div><p class="muted-copy">O motor offline gera formas e ilustrações simples sem internet. A geração de código usa Ollama local, não executa nem compila os arquivos e exige revisar o resultado. O modelo usa hardware e energia do seu equipamento.</p></div>' +
     '<details class="panel"><summary>Configurar IA de imagem local (grátis)</summary><p class="muted-copy">Conecte um Automatic1111 ou Forge instalado no computador que executa o servidor JARVES. Inicie o motor com a API habilitada (por exemplo, <code>--api</code>). A geração não usa API paga, mas exige baixar um modelo e recursos de hardware; o desempenho depende do seu equipamento.</p><label for="genImageUrl">Endereço local do motor</label><input id="genImageUrl" type="url" inputmode="url" placeholder="http://127.0.0.1:7860"><div class="row"><button class="secondary-btn" id="genImageSave" type="button">Salvar endereço</button><button class="secondary-btn" id="genImageTest" type="button">Testar conexão</button><span id="genImageConfigStatus" class="status" role="status" aria-live="polite"></span></div></details>' +
     '<div class="panel" id="genOut" hidden><h3>Plano</h3><ol id="genPlan"></ol><h3>Arquivos</h3><div class="list" id="genFiles"></div>' +
+    '<div class="row"><button class="secondary-btn" id="genTestHtml" type="button" hidden>Testar HTML gerado</button><span class="status" id="genHtmlTestStatus" role="status" aria-live="polite"></span></div>' +
     '<div class="row"><button class="secondary-btn" id="genZip" type="button">⇩ Baixar tudo (.zip)</button><button class="secondary-btn" id="genSave" type="button">▤ Salvar em Arquivos</button><button class="secondary-btn" id="genPng" type="button" hidden>🖼 Baixar PNG</button></div>' +
     '<div class="status" id="genStatus"></div><h3>Pré-visualização</h3><img id="genImagePreview" alt="Imagem gerada pelo modelo local" hidden style="max-width:100%;height:auto;border-radius:12px"><iframe id="genFrame" title="Pré-visualização" sandbox="allow-scripts" style="width:100%;height:480px;border:1px solid var(--line);border-radius:12px;background:#fff"></iframe></div>';
   main.appendChild(sec);
@@ -68,8 +69,9 @@
     const main = files.find(f => /\.html?$/.test(f.name)); if (!main) return '';
     let h = main.content;
     h = h.replace(/<link[^>]+href="([^"]+\.css)"[^>]*>/g, (m, n) => { const f = files.find(x => x.name === n); return f ? '<style>' + f.content + '</style>' : m; });
-    h = h.replace(/<script[^>]+src="([^"]+\.js)"[^>]*><\/script>/g, (m, n) => { const f = files.find(x => x.name === n); return f ? '<script>' + f.content.replace(/<\/script/gi, '<\\/script') + '<\/script>' : m; });
-    return h;
+    h = h.replace(/<script[^>]+src="([^"]+\.js)"[^>]*><\/script>/g, (m, n) => { const f = files.find(x => x.name === n); return f ? '<script>' + f.content.replace(/<\/script/gi, '<\\/script') + '<\/script>' : m;     });
+    const policy = '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; img-src data: blob:; connect-src \'none\'; form-action \'none\'; base-uri \'none\'">';
+    return /<head\b[^>]*>/i.test(h) ? h.replace(/<head\b[^>]*>/i, match => match + policy) : policy + h;
   }
 
   function show(res, note = '') {
@@ -86,6 +88,9 @@
     });
     const svg = res.files.find(f => f.name.endsWith('.svg'));
     const png = res.files.find(f => f.mime === 'image/png' && f.encoding === 'base64');
+    const html = res.files.find(f => /\.html?$/i.test(f.name));
+    $('genTestHtml').hidden = !html;
+    $('genHtmlTestStatus').textContent = '';
     $('genPng').hidden = !svg;
     $('genImagePreview').hidden = !png;
     $('genImagePreview').removeAttribute('src');
@@ -94,6 +99,30 @@
     else $('genFrame').srcdoc = svg ? '<body style="margin:0;background:#000"><div style="max-width:100%">' + svg.content.replace('width="1024" height="768"', 'style="width:100%;height:auto"') + '</div></body>' : previewDoc(res.files);
     status(note || ('Pronto. ' + res.files.length + ' arquivo(s).'));
   }
+  $('genTestHtml').addEventListener('click', async () => {
+    const file = current?.files.find(item => /\.html?$/i.test(item.name));
+    if (!file) return;
+    const result = window.jarvesGeneratedHtml?.validate(file.content);
+    if (!result) {
+      $('genHtmlTestStatus').textContent = 'Validador HTML indisponível. Atualize o aplicativo e tente novamente.';
+      return;
+    }
+    $('genTestHtml').disabled = true;
+    $('genHtmlTestStatus').textContent = 'Verificando HTML e sintaxe JavaScript sem executar os scripts...';
+    try {
+      result.errors.push(...await window.jarvesGeneratedHtml.validateInlineScripts(file.content, window.api.analyzeCode));
+      result.valid = result.errors.length === 0;
+    } catch (error) {
+      $('genHtmlTestStatus').textContent = `Não foi possível concluir o teste: ${error.message}`;
+      $('genTestHtml').disabled = false;
+      return;
+    }
+    const findings = [...result.errors, ...result.warnings];
+    $('genHtmlTestStatus').textContent = result.valid
+      ? `HTML válido.${result.warnings.length ? ` Avisos: ${result.warnings.join(' ')}` : ' Estrutura, dependências e sintaxe JavaScript verificadas.'}`
+      : `HTML inválido: ${findings.join(' ')}`;
+    $('genTestHtml').disabled = false;
+  });
 
   async function loadImageGeneratorSettings() {
     try {
@@ -135,9 +164,13 @@
       : codeRequest
         ? 'Crie um projeto de programação para o seguinte pedido: '
         : 'Crie uma experiência HTML interativa sobre: ';
-    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: task + prompt, systemPrompt: sys, stream: false, provider: 'ollama' }) });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error || 'falha na IA');
+    const request = async message => {
+      const response = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message, systemPrompt: sys, stream: false, provider: 'ollama' }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || 'falha na IA');
+      return body;
+    };
+    let j = await request(task + prompt);
     if (meshRequest) {
       const raw = String(j.content || '').replace(/^```(?:json)?\s*|\s*```$/gi, '').trim();
       let spec;
@@ -172,9 +205,21 @@
       }
       return { ...project, model: j.model || 'Ollama local' };
     }
-    const m = String(j.content || '').match(/```(?:html)?\s*([\s\S]*?)```/i);
-    const code = (m ? m[1] : j.content || '').trim();
-    if (!/<html|<!doctype|<svg|<canvas|<body/i.test(code)) throw new Error('A IA não devolveu HTML utilizável (modelo ' + (j.model || '?') + ').');
+    const htmlTools = window.jarvesGeneratedHtml;
+    if (!htmlTools) throw new Error('O validador de HTML não foi carregado. Atualize o aplicativo.');
+    let code = htmlTools.normalize(j.content);
+    let validation = htmlTools.validate(code);
+    validation.errors.push(...await htmlTools.validateInlineScripts(code, window.api.analyzeCode));
+    validation.valid = validation.errors.length === 0;
+    if (!validation.valid) {
+      const retry = `${task}${prompt}\n\nA saída anterior falhou nestes testes: ${validation.errors.join(' ')} Refaça o arquivo HTML completo, corrigindo todos os erros. Responda somente com o HTML autocontido, sem dependências nem explicações.`;
+      j = await request(retry);
+      code = htmlTools.normalize(j.content);
+      validation = htmlTools.validate(code);
+      validation.errors.push(...await htmlTools.validateInlineScripts(code, window.api.analyzeCode));
+      validation.valid = validation.errors.length === 0;
+    }
+    if (!validation.valid) throw new Error('O HTML gerado falhou na validação: ' + validation.errors.join(' '));
     return { type: type || 'auto', model: j.model || 'Ollama local', plan: ['Gerar HTML com o modelo local ' + (j.model || ''), 'Conferir e abrir a pré-visualização isolada'], files: [{ name: 'experiencia.html', mime: 'text/html', content: code }] };
   }
 
@@ -212,17 +257,12 @@
           res = window.JARVES_BASE.generate(prompt, type);
         }
       } else if ($('genEngine').value === 'ia' && ['site', 'jogo', 'experiencia'].includes(type)) {
-        try {
-          const generated = await viaIA(prompt, type);
-          if (type === 'experiencia') {
-            const base = window.JARVES_BASE.generate(prompt, type);
-            res = { ...base, plan: [...base.plan, 'Adicionar a experiência HTML produzida pelo Ollama local'], files: [base.files[0], ...generated.files, ...base.files.slice(1)] };
-          } else res = generated;
-          note = 'Conteúdo gerado pelo Ollama local (' + generated.model + '); revise os arquivos antes de compartilhar.';
-        } catch (e) {
-          note = 'Ollama local indisponível (' + e.message + '). Usando o gerador offline.';
-          res = window.JARVES_BASE.generate(prompt, type);
-        }
+        const generated = await viaIA(prompt, type);
+        if (type === 'experiencia') {
+          const base = window.JARVES_BASE.generate(prompt, type);
+          res = { ...base, plan: [...base.plan, 'Adicionar a experiência HTML produzida pelo Ollama local'], files: [base.files[0], ...generated.files, ...base.files.slice(1)] };
+        } else res = generated;
+        note = 'Conteúdo gerado pelo Ollama local (' + generated.model + '); revise os arquivos antes de compartilhar.';
       } else {
         res = window.JARVES_BASE.generate(prompt, type);
         if ($('genEngine').value === 'ia' && type === 'imagem') note = 'SVG criado pelo gerador offline; nenhum serviço de IA foi chamado.';

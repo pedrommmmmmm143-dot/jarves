@@ -21,8 +21,10 @@
     if (progress) progress.textContent = '0%';
 
     // 1. Elementos essenciais da interface
-    const required = ['sidebar','chatArea','input','btnSend','convList','view-settings'];
+    const required = ['sidebar','chatArea','input','btnSend','convList','view-settings','chat-resources'];
     required.forEach(id => add(`Elemento #${id}`, byId(id), byId(id) ? 'Encontrado' : 'Elemento ausente'));
+    add('Ferramentas fora do menu lateral', !byId('sidebarTools') && Boolean(document.querySelector('.chat-resources')), 'Atalhos e recursos continuam disponíveis na conversa');
+    add('Catálogo de comandos acessível', byId('commandCatalogSearch') && byId('commandCatalogResults'), 'A busca dos comandos permanece no menu Atalhos');
 
     // 2. Recursos carregados
     const scripts = [...document.scripts].filter(s => s.src);
@@ -36,7 +38,29 @@
     add('Navegador Fetch', typeof window.fetch === 'function', 'API Fetch disponível');
     add('Armazenamento local', (() => { try { const k='jarves-test-'+Date.now(); localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; } catch { return false; } })(), 'Teste de gravação temporária');
 
-    // 4. Arquivos públicos
+    // 4. Validação de HTML gerado
+    const htmlTools = window.jarvesGeneratedHtml;
+    add('Validador de HTML carregado', Boolean(htmlTools?.validate && htmlTools?.validateInlineScripts), typeof htmlTools);
+    if (htmlTools) {
+      const validHtml = '<!doctype html><html><head><title>Teste</title></head><body><h1>Olá</h1></body></html>';
+      const validResult = htmlTools.validate(validHtml);
+      add('HTML completo aprovado', validResult.valid, validResult.errors.join(' ') || 'Estrutura válida');
+      const normalized = htmlTools.normalize('Resposta:\n```html\n' + validHtml + '\n```');
+      add('Bloco HTML extraído', normalized === validHtml, normalized.slice(0, 40));
+      const malformed = htmlTools.validate('<html><head><title>Teste</title></head><body><p>incompleto</body></html>');
+      add('HTML incompleto rejeitado', !malformed.valid, malformed.errors.join(' '));
+      const closeScript = String.fromCharCode(60) + '/script>';
+      const external = htmlTools.validate(validHtml.replace('</head>', '<script src="https://example.invalid/app.js">' + closeScript + '</head>'));
+      add('Dependência remota rejeitada', !external.valid, external.errors.join(' '));
+      const duplicateId = htmlTools.validate(validHtml.replace('</body>', '<div id="dup"></div><span id="dup"></span></body>'));
+      add('IDs duplicados rejeitados', !duplicateId.valid, duplicateId.errors.join(' '));
+      try {
+        const scripts = await htmlTools.validateInlineScripts('<!doctype html><html><head></head><body><script>const = ;' + closeScript + '</body></html>', window.api.analyzeCode);
+        add('Sintaxe JavaScript inválida rejeitada', scripts.length > 0, scripts.join(' ') || 'Script inválido não foi detectado');
+      } catch (error) { add('Verificação de sintaxe JavaScript', false, error.message); }
+    }
+
+    // 5. Arquivos públicos
     try {
       const response = await fetch('/manifest.json', { cache: 'no-store' });
       add('Manifest PWA', response.ok, `HTTP ${response.status}`);
@@ -46,7 +70,7 @@
       }
     } catch (error) { add('Manifest PWA', false, error.message); }
 
-    // 5. Backend
+    // 6. Backend
     try {
       const response = await fetch('/api/health', { cache: 'no-store' });
       add('API de saúde', response.ok, `HTTP ${response.status}`);
@@ -56,7 +80,7 @@
       }
     } catch (error) { add('API de saúde', false, error.message || 'Servidor indisponível'); }
 
-    // 6. Responsividade
+    // 7. Responsividade
     add('Viewport configurado', Boolean(document.querySelector('meta[name="viewport"]')), 'Meta viewport');
     add('Layout executável', document.documentElement.clientWidth > 0, `${document.documentElement.clientWidth}px de largura`);
     add('Modo seguro de navegação', window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.protocol === 'file:', window.isSecureContext ? 'Contexto seguro' : 'Contexto local ou não seguro');
