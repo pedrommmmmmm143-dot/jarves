@@ -16,16 +16,25 @@ test('frontend index exists and has key controls', () => {
   const workspaceNavigation = html.match(/<nav class="tool-nav workspace-nav" aria-label="Preferências">([\s\S]*?)<\/nav>/)?.[1] || '';
   assert.deepEqual([...workspaceNavigation.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]), ['settings']);
   assert.match(html, /aria-label="Preferências"[\s\S]*data-view="settings"/);
-  const chatTools = html.match(/<section class="chat-tools[\s\S]*?<\/section>/)?.[0] || '';
-  assert.deepEqual([...chatTools.matchAll(/data-chat-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio', 'settings']);
-  assert.match(chatTools, /data-chat-action="images"/);
-  assert.match(chatTools, /id="chatImagePrompt"[\s\S]*id="btnGenerateChatImage"/);
+  const sidebarTools = html.match(/<details class="sidebar-tools"[\s\S]*?<\/nav>/)?.[0] || '';
+  const sidebarToolNav = html.match(/<nav class="tool-nav sidebar-tool-nav"[\s\S]*?<\/nav>/)?.[0] || '';
+  assert.match(html, /id="sidebarTools"[\s\S]*id="sidebarToolNav"/);
+  assert.deepEqual([...sidebarToolNav.matchAll(/data-sidebar-tool="([^"]+)"/g)].map(match => match[1]), ['gerador', 'voice-studio', 'html-tests', 'reports', 'agents', 'tasks', 'files', 'memory', 'roblox-studio']);
+  assert.match(sidebarToolNav, /data-sidebar-action="images"/);
+  assert.doesNotMatch(html, /id="btnChatTools"|>Atalhos<\/button>/);
+  assert.match(html, /id="commandCatalogSearch"/);
+  assert.match(html, /id="commandCatalogResults"/);
+  assert.match(html, /Comandos de IA <span>900<\/span>/);
+  assert.match(html, /\/scripts\/commands\.js/);
+  assert.match(html, /id="chatImagePrompt"[\s\S]*id="btnGenerateChatImage"/);
   for (const id of ['view-roblox-studio','btnRobloxPair','robloxBridgeAddress','robloxBridgeToken','btnCopyRobloxToken','robloxScriptName','robloxScriptTarget','robloxScriptSource','btnQueueRobloxScript']) {
     assert.ok(html.includes(`id="${id}"`), 'missing Roblox Studio control ' + id);
   }
   assert.match(html, /Plugins → Save as Local Plugin/);
   assert.match(html, /Wine não é suportado oficialmente/);
-  for (const id of ['btnChatTools','btnCloseChatTools','btnBackToChat','chatTools','btnVoice','voiceCommandStatus','btnSound']) assert.ok(html.includes(`id="${id}"`), 'missing unified chat control ' + id);
+  for (const id of ['sidebarTools','sidebarToolNav','btnBackToChat','btnVoice','voiceCommandStatus','btnSound']) assert.ok(html.includes(`id="${id}"`), 'missing sidebar chat control ' + id);
+  assert.match(html, /id="memoryEnabled"/);
+  assert.match(html, /id="memoryStatus"/);
   assert.match(html, /id="view-html-tests"[\s\S]*id="btnRunHtmlTests"/);
   const generator = fs.readFileSync(path.join(root, 'frontend/scripts/gerador.js'), 'utf8');
   assert.match(generator, /value="modelo-3d"/);
@@ -44,6 +53,7 @@ test('frontend index exists and has key controls', () => {
     assert.ok(html.includes(`id="${id}"`), 'missing preference/diagnostic control ' + id);
   }
   const appScript = fs.readFileSync(path.join(root, 'frontend/scripts/app.js'), 'utf8');
+  assert.match(appScript, /window\.jarvesCommandCatalog\?\.get\(text\)/);
   assert.match(appScript, /api\.generateImage\(\{ prompt, width: size, height: size, steps: 20 \}\)/);
   assert.match(appScript, /generated-image-message/);
   assert.match(appScript, /playResponseSound\(\)/);
@@ -129,9 +139,10 @@ test('Android launcher icons target the declared activity and expose only packag
   const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const androidBuild = fs.readFileSync(path.join(root, 'android/app/build.gradle'), 'utf8');
   const environment = fs.readFileSync(path.join(root, 'backend/config/env.mjs'), 'utf8');
-  assert.equal(packageJson.version, '2.4.2');
-  assert.match(androidBuild, /versionCode 242[\s\S]*versionName '2\.4\.2'/);
-  assert.match(environment, /APP_VERSION = '2\.4.2'/);
+  assert.equal(packageJson.version, '2.5.2');
+  assert.match(androidBuild, /versionCode 252/);
+  assert.match(androidBuild, /versionName '2.5.2'/);
+  assert.match(environment, /APP_VERSION = '2.5.2'/);
   const manifest = fs.readFileSync(path.join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8');
   for (const permission of ['INTERNET', 'ACCESS_NETWORK_STATE', 'ACCESS_WIFI_STATE', 'CHANGE_NETWORK_STATE', 'CHANGE_WIFI_MULTICAST_STATE', 'RECORD_AUDIO']) {
     assert.match(manifest, new RegExp(`android:name="android\\.permission\\.${permission}"`));
