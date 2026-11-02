@@ -16,7 +16,7 @@
 <div class="app-shell">
   <aside class="sidebar" id="sidebar" aria-label="Menu principal">
     <div class="sidebar-header">
-      <a class="brand" href="/" aria-label="JARVES AI início"><span class="brand-mark" id="brandMark">J</span><span><b id="brandName">JARVES AI</b><small>2.4.2 · ROBLOX STUDIO</small></span></a>
+      <a class="brand" href="/" aria-label="JARVES AI início"><span class="brand-mark" id="brandMark">J</span><span><b id="brandName">JARVES AI</b><small>2.5.2 · ROBLOX STUDIO</small></span></a>
       <button class="icon-btn mobile-close" id="btnCloseSidebar" aria-label="Fechar menu">×</button>
     </div>
     <nav class="tool-nav primary-nav" aria-label="Navegação principal">
@@ -33,7 +33,7 @@
       <div class="side-label">CONVERSAS</div>
       <nav class="sidebar-nav" id="convList" aria-label="Conversas"></nav>
     </div>
-    <div class="sidebar-bottom"><span class="online-dot"></span><span id="aiRuntimeStatus" role="status">Verificando provedor de IA...</span><small>v2.4.2</small></div>
+    <div class="sidebar-bottom"><span class="online-dot"></span><span id="aiRuntimeStatus" role="status">Verificando provedor de IA...</span><small>v2.5.2</small></div>
   </aside>
   <button class="overlay" id="overlay" aria-label="Fechar menu" aria-hidden="true" tabindex="-1"></button>
   <main class="main">
@@ -50,10 +50,16 @@
     </header>
     <section class="view view-chat" id="view-chat">
       <div class="chat-area" id="chatArea" role="log" aria-live="polite">
-        <div class="welcome" id="welcomePanel"><div class="welcome-orb" id="welcomeOrb">J</div>        <p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.4.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div></div>
+        <div class="welcome" id="welcomePanel"><div class="welcome-orb" id="welcomeOrb">J</div>        <p class="eyebrow"><span id="welcomeAiName">JARVES AI</span> · 2.5.2</p><h1>Como posso ajudar<br><span>você hoje?</span></h1><p class="welcome-copy">Pergunte, crie, programe ou organize suas ideias. Sua próxima descoberta começa aqui.</p><div class="welcome-chips"><button type="button" data-prompt="Explique como você pode me ajudar.">✦ Conhecer o JARVES</button><button type="button" data-prompt="Ajude-me a criar um projeto de software.">⌘ Criar um projeto</button><button type="button" data-prompt="Analise este código e sugira melhorias.">⌁ Analisar código</button></div></div>
       </div>
       <section class="chat-tools panel" id="chatTools" aria-label="Ferramentas do Chat" hidden>
         <div class="row html-test-toolbar"><div><h3>Ferramentas do Chat</h3><p class="muted-copy">Abra recursos sem sair do espaço principal do Chat.</p></div><button class="icon-btn" id="btnCloseChatTools" type="button" aria-label="Fechar ferramentas">×</button></div>
+        <div class="command-catalog" role="region" aria-labelledby="commandCatalogTitle">
+          <div class="command-catalog-heading"><div><h3 id="commandCatalogTitle">900 comandos prontos</h3><p class="muted-copy">Pesquise por assunto ou ação. Escolher só preenche o chat; você decide quando enviar.</p></div><span id="commandCatalogCount" role="status" aria-live="polite">900 comandos</span></div>
+          <label class="sr-only" for="commandCatalogSearch">Pesquisar comandos</label>
+          <input id="commandCatalogSearch" type="search" maxlength="80" placeholder="Ex.: /python-depurar, revisar HTML, planejar..." autocomplete="off">
+          <div class="command-catalog-results" id="commandCatalogResults" role="list"></div>
+        </div>
         <div class="card-grid chat-tool-grid">
           <button type="button" data-chat-action="images"><strong>▧ Gerar imagem PNG</strong><small>Crie uma imagem completa com Automatic1111/Forge local</small></button>
           <button type="button" data-chat-tool="gerador"><strong>✦ Gerador 2D/3D</strong><small>SVG, modelos 3D e HTML interativo</small></button>
@@ -125,7 +131,7 @@
     <section class="view content-view" id="view-agents" hidden><div class="page-heading"><p class="eyebrow">AUTOMAÇÃO INTELIGENTE</p><h1>Agentes especializados</h1><p>Escolha um agente e delegue uma tarefa.</p></div><div class="card-grid" id="agentsGrid"></div><div class="panel"><h3>Executar agente</h3><select id="agentSelect"></select><textarea id="agentTask" placeholder="Descreva a tarefa para o agente..."></textarea><button class="primary-btn" id="btnRunAgent">Executar agente</button><pre id="agentResult" class="result-box"></pre></div></section>
     <section class="view content-view" id="view-tasks" hidden><div class="page-heading"><p class="eyebrow">ORGANIZAÇÃO</p><h1>Planejamento de tarefas</h1><p>Transforme objetivos em etapas organizadas.</p></div><div class="panel"><textarea id="taskGoal" placeholder="Descreva seu objetivo..."></textarea><div class="row"><button class="primary-btn" id="btnPlan">Criar planejamento</button><button class="secondary-btn" id="btnRunTask">Criar e executar</button></div><pre id="planPreview" class="result-box"></pre></div><h3>Tarefas</h3><div id="taskList" class="list"></div></section>
     <section class="view content-view" id="view-files" hidden><div class="page-heading"><p class="eyebrow">ESPAÇO DE TRABALHO</p><h1>Arquivos e código</h1><p>Importe arquivos, baixe links públicos ou peça uma análise de código.</p></div><div class="panel"><h3>Baixar um arquivo da rede</h3><p class="muted-copy">Cole um link público HTTP/HTTPS para salvar PDF, imagem, áudio, vídeo, ZIP ou outro arquivo. O tamanho máximo segue o limite configurado para uploads. Endereços locais e privados são bloqueados.</p><label for="networkFileUrl">Link do arquivo</label><input id="networkFileUrl" type="url" inputmode="url" placeholder="https://exemplo.com/arquivo.pdf" autocomplete="url"><div class="row"><button class="primary-btn" id="btnDownloadNetworkFile" type="button">Baixar arquivo</button><span id="networkDownloadStatus" class="status" role="status" aria-live="polite"></span></div></div><div class="panel"><h3>Importar deste dispositivo</h3><input type="file" id="fileInput" multiple><button class="primary-btn" id="btnUpload">Importar arquivos</button><div id="uploadStatus" class="status"></div></div><div id="fileList" class="list"></div><div class="panel"><h3>Analisar código</h3><textarea id="codeInput" placeholder="Cole seu código aqui..."></textarea><button class="primary-btn" id="btnAnalyzeCode">Analisar código</button><pre id="codeAnalysis" class="result-box"></pre></div></section>
-    <section class="view content-view" id="view-memory" hidden><div class="page-heading"><p class="eyebrow">CONTEXTO PERSISTENTE</p><h1>Memória</h1><p>Organize informações úteis para suas conversas.</p></div><div class="panel"><input id="memSubject" placeholder="Assunto"><textarea id="memContent" placeholder="Conteúdo..."></textarea><select id="memKind"><option value="note">Nota</option><option value="preference">Preferência</option><option value="fact">Fato</option></select><button class="primary-btn" id="btnSaveMem">Salvar memória</button></div><input type="search" id="memSearch" placeholder="Pesquisar memória..."><div id="memList" class="list"></div></section>
+    <section class="view content-view" id="view-memory" hidden><div class="page-heading"><p class="eyebrow">CONTEXTO PERSISTENTE</p><h1>Memória</h1><p>Organize informações úteis para suas conversas.</p></div><div class="panel"><label class="memory-toggle"><input id="memoryEnabled" type="checkbox" checked><span>Usar memórias salvas</span></label><p class="muted-copy" id="memoryStatus" role="status" aria-live="polite">Carregando configuração...</p><input id="memSubject" placeholder="Assunto"><textarea id="memContent" placeholder="Conteúdo..."></textarea><select id="memKind"><option value="note">Nota</option><option value="preference">Preferência</option><option value="fact">Fato</option></select><button class="primary-btn" id="btnSaveMem">Salvar memória</button></div><input type="search" id="memSearch" placeholder="Pesquisar memória..."><div id="memList" class="list"></div></section>
     <section class="view content-view" id="view-roblox-studio" hidden>
       <div class="page-heading"><p class="eyebrow">INTEGRAÇÃO LOCAL</p><h1>Roblox Studio</h1><p>Envie código Luau do JARVES ao plugin local; o Studio sempre pede sua confirmação antes de inserir.</p></div>
       <div class="panel">
@@ -224,7 +230,7 @@
     </section>
   </main>
 </div>
-<script src="/scripts/api.js"></script><script src="/scripts/state.js"></script><script src="/scripts/ui.js"></script><script src="/scripts/particles.js"></script><script src="/scripts/app.js"></script><script src="/scripts/base-engine.js"></script><script src="/scripts/gerador.js"></script><script src="/scripts/html-tests.js"></script><script src="/scripts/roblox-studio.js"></script>
+<script src="/scripts/api.js"></script><script src="/scripts/state.js"></script><script src="/scripts/ui.js"></script><script src="/scripts/particles.js"></script><script src="/scripts/commands.js"></script><script src="/scripts/app.js"></script><script src="/scripts/base-engine.js"></script><script src="/scripts/gerador.js"></script><script src="/scripts/html-tests.js"></script><script src="/scripts/roblox-studio.js"></script>
 <script>
 document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('input');i.value=b.dataset.prompt;i.focus();}));
 </script>
