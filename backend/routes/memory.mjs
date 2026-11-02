@@ -1,6 +1,5 @@
 import express from 'express';
 import * as M from '../../database/repositories/memoryRepository.mjs';
-import { env } from '../config/env.mjs';
 
 const router = express.Router();
 
@@ -25,7 +24,7 @@ router.get('/search', (req, res) => {
 });
 
 router.get('/status', (req, res) => {
-  res.json({ enabled: env.MEMORY_ENABLED });
+  res.json({ enabled: M.isMemoryEnabled() });
 });
 
 router.get('/:id', (req, res) => {

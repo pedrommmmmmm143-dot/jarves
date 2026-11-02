@@ -51,6 +51,9 @@ router.put('/:key', (req, res) => {
   if (key === 'ai_timeout_ms' && (isNaN(Number(value)) || Number(value) < 1000)) return res.status(400).json({ error: 'timeout invalido' });
   if (key === 'ai_provider' && !['auto','ollama','openai-compatible','base','mock'].includes(value)) return res.status(400).json({ error: 'provedor invalido' });
   if (key === 'ai_quality' && !['low','medium','high'].includes(value)) return res.status(400).json({ error: 'qualidade invalida' });
+  if (key === 'memory_enabled' && ![true, false, 'true', 'false', '1', '0'].includes(value)) {
+    return res.status(400).json({ error: 'memory_enabled deve ser booleano' });
+  }
   S.setSetting(key, value);
   res.json({ ok: true, key, value: key === 'openai_api_key' ? '***' + String(value).slice(-4) : value });
 });
