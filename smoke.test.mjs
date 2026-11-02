@@ -58,16 +58,16 @@ test('frontend index exists and has key controls', () => {
 
 test('download page only enables APK, EXE, and AppImage downloads from a published GitHub release', () => {
   const html = fs.readFileSync(path.join(root, 'frontend/download.html'), 'utf8');
-  assert.match(html, /const repository = 'p59784166-cloud\/jarves'/);
+  assert.match(html, /const repository = 'pedrommmmmmm143-dot\/jarves'/);
   assert.equal((html.match(/href="\.\/"/g) || []).length, 1);
-  assert.match(html, /href="https:\/\/github\.com\/p59784166-cloud\/jarves">Código<\/a>/);
+  assert.match(html, /href="https:\/\/github\.com\/pedrommmmmmm143-dot\/jarves">Código<\/a>/);
   assert.match(html, /Os botões só aparecem quando o GitHub publica um arquivo real na Release/);
   assert.match(html, /inferência funciona offline[\s\S]*conexão ao servidor JARVES no PC continua opcional/);
   assert.match(html, /sem mensalidade[\s\S]*sem chave de API paga/);
   assert.match(html, /hardware, eletricidade e conexão para baixar o modelo não são fornecidos/);
   assert.match(html, /aria-label="Menu do site"/);
   assert.match(html, /href="#download-options"/);
-  assert.match(html, /href="https:\/\/github\.com\/p59784166-cloud\/jarves\/releases\/latest"/);
+  assert.match(html, /href="https:\/\/github\.com\/pedrommmmmmm143-dot\/jarves\/releases\/latest"/);
   assert.match(html, /Sem links inventados/);
   assert.match(html, /api\.github\.com\/repos\/\$\{repository\}\/releases\/latest/);
   assert.match(html, /asset\.name === 'app-debug\.apk'/);
