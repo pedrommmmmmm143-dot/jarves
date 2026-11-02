@@ -200,7 +200,8 @@ test('chat rejects unknown AI profiles before creating a conversation', async ()
 
 test('Ollama health endpoint reports connection and never starts model downloads', async () => {
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (url) => {
+  globalThis.fetch = async (url, options) => {
+    if (String(url).startsWith(baseUrl)) return originalFetch(url, options);
     assert.match(String(url), /\/api\/tags$/);
     return new Response(JSON.stringify({ models: [{ name: 'qwen2.5:3b', size: 123 }] }), {
       status: 200, headers: { 'Content-Type': 'application/json' },
