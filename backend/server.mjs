@@ -16,6 +16,7 @@ import tasksRouter from './routes/tasks.mjs';
 import researchRouter from './routes/research.mjs';
 import diagnosticsRouter from './routes/diagnostics.mjs';
 import imagesRouter from './routes/images.mjs';
+import videosRouter from './routes/videos.mjs';
 import robloxRouter from './routes/roblox.mjs';
 
 ensureDirs();
@@ -46,6 +47,7 @@ app.use('/api/tasks', adminGuard, tasksRouter);
 app.use('/api/research', researchRouter);
 app.use('/api/diagnostics', diagnosticsRouter);
 app.use('/api/images', imagesRouter);
+app.use('/api/videos', videosRouter);
 app.use('/api/roblox', robloxRouter);
 
 // Public preview of uploaded file as site
